@@ -29,5 +29,29 @@ __stack_top = ORIGIN(SRAM) + LENGTH(SRAM);
 
 SECTIONS
 {
-    
+    /* ─────────────────────────────────────────────────────────────
+     * .isr_vector - ARM Cortex-M3 Vector Table
+     * MUST be the very first thing at 0x08000000
+     *
+     * Place the vector table at the start of the Flash and keep all 
+     * sections even if there is no explicit references to it.
+     *
+     */
+    .isr_vector :
+    {
+        KEEP(*(.isr_vector))
+    } > FLASH
+
+
+    /* ─────────────────────────────────────────────────────────────
+     * .text - Executable code and read-only data
+     *  Both VMA and the LMA are in FLASH ( code runs directly from flash ).
+     */
+    .text :
+    {
+        *(.text)        /* All regular code sections */
+        *(.text.*)      /* Per-function sections ( from -ffunction-sections ) */
+        *(.rodata)      /* All Read-only Data : string literals, const globals */
+        *(.rodata.*)
+    }
 }
