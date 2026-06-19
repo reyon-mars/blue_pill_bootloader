@@ -102,5 +102,31 @@ SECTIONS
         __data_end = .;    /* End of .data in SRAM (VMA) */
     } >SRAM AT>FLASH
 
-    
+    /* ─────────────────────────────────────────────────────────────
+     * .bss - Zero-initialized global and static variables
+     * 
+     * Only a VMA exists (in SRAM). There are no initial values to
+     * store in flash because they are all zero by C++ standard.
+     * startup.s zeros this entire region before calling main().
+     ───────────────────────────────────────────────────────────── */
+    .bss :
+    {
+        __bss_start = .;
+        *(.bss)
+        *(.bss.*)
+        *(COMMON)   /* C-style "common" uninitialized global */
+        __bss_end = .;
+    } >SRAM
+
+    /* ─────────────────────────────────────────────────────────────
+     * Discard C++ exception handling tables.
+     * We compile with -fno-exceptions, so these are generated but
+     * empty. Discarding them keeps the flash image lean.
+     ───────────────────────────────────────────────────────────── */
+    /DISCARD/ :
+    {
+        *(.ARM.exidx*)
+        *(.ARM.extab*)
+        *(.eh_frame*)
+    }
 }
