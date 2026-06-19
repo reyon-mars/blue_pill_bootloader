@@ -94,4 +94,39 @@ vector_table:
     .word DMA1_Channel5_IRQHandler  @ [31] IRQ15: DMA1 channel 5
     .word DMA1_Channel6_IRQHandler  @ [32] IRQ16: DMA1 channel 6
     .word DMA1_channel7_IRQHandler  @ [33] IRQ17: DMA1 channel 7
-    .word 
+    .word ADC1_2_IRQHandler         @ [34] IRQ18: ADC1 and ADC2
+    .word USB_HP_CAN_TX_IRQHandler  @ [35] IRQ19: USB High Priority / CAN TX
+    .word USB_LP_CAN_RX0_IRQHandler @ [36] IRQ20: USB Low Priority 
+    .word CAN_RX1_IRQHandler        @ [37] IRQ21: CAN RX1
+    .word CAN_SCE_IRQHandler        @ [38] IRQ22: CAN SCE
+    .word EXTI9_5_IRQHandler        @ [39] IRQ23: EXTI lines 5-9
+    .word TIM1_BRK_IRQHandler       @ [40] IRQ24: TIM1 break
+    .word TIM1_UP_IRQHandler        @ [41] IRQ25: TIM1 update
+    .word TIM1_TRG_COM_IRQHandler   @ [42] IRQ26: TIM1 trigger/commutation
+    .word TIM1_CC_IRQHandler        @ [43] IRQ27: TIM1 capture/compare
+    .word TIM2_IRQHandler           @ [44] IRQ28: TIM2 global
+    .word TIM3_IRQHandler           @ [45] IRQ29: TIM3 global
+    .word TIM4_IRQHandler           @ [46] IRQ30: TIM4 global
+    .word I2C1_EV_IRQHandler        @ [47] IRQ31: I2C1 event
+    .word I2C1_ER_IRQHandler        @ [48] IRQ32: I2C1 error
+    .word I2C2_EV_IRQHandler        @ [49] IRQ33: I2C2 event
+    .word I2C2_ER_IRQHandler        @ [50] IRQ34: I2C2 error
+    .word SPI1_IRQHandler           @ [51] IRQ35: SPI1
+    .word SPI2_IRQHandler           @ [52] IRQ36: SPI2
+    .word USART1_IRQHandler         @ [53] IRQ37: USART1
+    .word USART2_IRQHandler         @ [54] IRQ38: USART2
+    .word USART3_IRQHandler         @ [55] IRQ39: USART3
+    .word EXTI15_10_IRQHandler      @ [56] IRQ40: EXTI lines 10-15
+    .word RTCAlarm_IRQHandler       @ [57] IRQ41: RTC alarm via EXTI
+    .word USBWakeUp_IRQHandler      @ [58] IRQ42: USB wakeup from suspend
+
+@ =================================================================
+@ Reset_Handler - The Very First Code That Runs
+@
+@ Entered immediately after power-on or reset. At this Point:
+@ -> MSP is already loaded from vector_table[0] by hardware
+@ -> SRAM contains random garbage ( no .data, no .bss initialized )
+@ -> No C++ runtime exists
+@ =================================================================
+
+
