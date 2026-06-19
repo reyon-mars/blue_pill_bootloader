@@ -36,7 +36,7 @@ SECTIONS
      * Place the vector table at the start of the Flash and keep all 
      * sections even if there is no explicit references to it.
      *
-     */
+      ───────────────────────────────────────────────────────────── */
     .isr_vector :
     {
         KEEP(*(.isr_vector))
@@ -53,5 +53,54 @@ SECTIONS
         *(.text.*)      /* Per-function sections ( from -ffunction-sections ) */
         *(.rodata)      /* All Read-only Data : string literals, const globals */
         *(.rodata.*)
-    }
+
+        /* 
+         * C++ global constructor/destructor pointer arrays.
+         * Creating a global object of any class, results in the compiler
+         * generating a constructor function, which it places in the 
+         * .init_array. Our startup code traverses this array and calls 
+         * each constructor before calling main().
+         */
+        __preinit_array_start = .;
+        KEEP(*(.preinit_array*))
+        __preinit_array_end = .;
+
+        __init_array_start = .;
+        KEEP(*(.init_array*))
+        __init_array_end = .;
+
+        __fini_array_start = .;
+        KEEP(*(.fini_array*))
+        __fini_array_end = .;
+    } > FLASH
+
+    /*
+     * Record where .data's initial values live in flash.
+     * LOADADDR(.data) evalutes to the LMA of the .data section 
+     * i.e., where in flash the initial values are stored.
+     * startup.s read __data_load as the source for the SRAM copy
+     * and places it in the SRAM addresses (VMA).
+     * 
+     * This assignment must come AFTER .text because .data's LMA
+     * follows immediately after .text in the flash image.
+     */
+    __data_load = LOADADDR(.data);
+
+    /* ─────────────────────────────────────────────────────────────
+     * .data - Initialized global and staic variables
+     * VMA: SRAM ( where .data live at runtime - writable )
+     * LMA: FLASH ( where .data initial values are stored - persistent )
+     * ">SRAM AT>FLASH" means:
+     * Assign VMA addresses from SRAM ( variables live here )
+     * Place LMA in FLASH after the previous FLASH section ( initial values here )
+      ───────────────────────────────────────────────────────────── */
+    .data :
+    {
+        __data_start = .;  /* Start of .data in SRAM (VMA) */
+        *(.data)
+        *(.data.*)
+        __data_end = .;    /* End of .data in SRAM (VMA) */
+    } >SRAM AT>FLASH
+
+    
 }
