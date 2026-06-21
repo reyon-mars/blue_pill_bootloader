@@ -185,6 +185,38 @@ Reset_Handler:
     b       .L_data_copy        @ Branch to the .L_data_copy lable again
 .L_data_copy_done:
 
+    @ ─────────────────────────────────────────────────────────────
+    @ STEP 3: Zero the .bss section 
+    @ The C++ standard ( ISO/IEC 14882, [basic.start.static] ) states
+    @ that objects with static storage duration are zero-initialized
+    @ before any other initialization. The hardware does NOT do this.
+    @ SRAM on power-up/reset contains garbage (essentially random data ).
+    @ So, we must zero every byte in .bss manually.
+    @ ─────────────────────────────────────────────────────────────
+    ldr     r0, =__bss_start    @ r0 -> start of .bss region in SRAM
+    ldr     r1, =__bss_end      @ r1 -> one past last byte of .bss
+    movs    r2, #0              @ r2 = 0 ( value to store )
+
+.L_bss_zero:
+    cmp     r0, r1              @ Have we reached the end ?
+    bhs     .L_bss_zero_done    @ If so, done.
+    str     r2, [r0], #4        @ Store 0 at current address, advance by 4
+    b       .L_bss_zero         @ Start over again
+.L_bss_zero_done:
+
+    
+    @ ─────────────────────────────────────────────────────────────
+    @ STEP 4: Call C++ global constructors
+    @ If there are any global C++ objects used, then the compiler generates
+    @ the constructors as a regular function and places a pointer to it in 
+    @ a special ELF section called .init_array. Our linker script collects all
+    @ .init_array sections and exposes __init_array_start / __init_array_end.
+    @
+    @ We iterate through this array of function pointers and call each one.
+    @ 'blx r2' : Branch with link and eXchange, i.e. calls the function at 
+    @ address r2, stores the return address in LR (Link Register), and respects 
+    @ the Thumb bit in r2.
+    @ ─────────────────────────────────────────────────────────────
     
     
 
