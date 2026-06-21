@@ -217,8 +217,116 @@ Reset_Handler:
     @ address r2, stores the return address in LR (Link Register), and respects 
     @ the Thumb bit in r2.
     @ ─────────────────────────────────────────────────────────────
+    ldr     r0, =__init_array_start
+    ldr     r1, =__init_array_end
     
-    
+.L_call_ctors:
+    cmp     r0, r1              @ All constructors called ? 
+    bhs     .L_call_ctors_done  @ Done.
+    ldr     r2, [r0], #4        @ Load constructor function pointer
+    blx     r2                  @ Call it (Thumb-safe indirect call)
+    b       .L_call_ctors       @ Start over again.
+.L_call_ctors_done:
+
+    @ ─────────────────────────────────────────────────────────────
+    @ STEP 5: Call main()
+    @ By now, the C++ runtime environment has been full initialized:
+    @   -> Stack is set up
+    @   -> .data is in SRAM with correct initial values
+    @   -> .bss is zeroed
+    @   -> Global constructors have all been called
+    @
+    @ We can now safely call main() as a normal C++ function.
+    @ 'bl main' = Branch with Link: jumps to main, stores the return 
+    @ address in LR so main() can return.
+    @ ─────────────────────────────────────────────────────────────
+    bl      main
+
+    @ ─────────────────────────────────────────────────────────────
+    @ STEP 6: Catch a returned main()
+    @
+    @ A correct bootloader's main() never returns. If it does (due 
+    @ to a bug), branching into random memory would cause a crash
+    @ that is nearly impossible to debug. Instead, we hang here.
+    @ A debugger will show the PC stuck at this address, which 
+    @ immediately tells us "main() returned unexpectedly".
+    @ ─────────────────────────────────────────────────────────────
+.L_hang:
+    b       .L_hang
+
+
+    @ ─────────────────────────────────────────────────────────────
+    @ The assembler directive .size Reset_Handler, . - Reset_Handler
+    @ calculates the total footprint of the function in bytes by 
+    @ substracting its starting address from the current location 
+    @ pointer (.) at the end of the code block. This metadata is placed
+    @ directly into the .elf object file on the PC to help the debugging 
+    @ tools map out function boundaries.
+    @ ─────────────────────────────────────────────────────────────
+.size   Reset_Handler, . - Reset_Handler
+
+@ =================================================================
+@ Default_Handler - Catch-All for Unexpected Exceptions/Interrupts
+@
+@ If any exception fires that we haven't explicitly handled, execution
+@ ends up here in an infinite loop. This is intentional: with a debugger
+@ connected, we can halt the CPU and inspect the call stack to see
+@ exactly which vector fired.
+@
+@ Without this, an unexpected interrupt would jump to address 0,
+@ causing a HardFault, which would itself call this handler
+@ =================================================================
+
+.section .text.Default_Handler, "ax", %progbits
+.thumb_func
+.weak       Default_Handler
+.global     Default_Handler
+.type       Default_Handler, %function
+
+Default_Handler:
+    b       Default_Handler     @ Spin forever - debugger will find us here
+
+.size Default_Handler, . - Default_Handler
+
+@ =================================================================
+@ Weak Handler Aliases
+@ 
+@ Each name below is declared as a weak alias for Default_Handler.
+@ "Weak" means: if another source file defines the Handler, that 
+@ definition wins. If not, this alias (pointing to Default_Handler)
+@ is used.
+@ 
+@ .thumb_set X, Y is like ".set X, Y" but propagates the Thumb 
+@ attribute, ensuring bit 0 is set correctly in the vector table.
+@ =================================================================
+
+@ Core Exceptions
+.weak       NMI_Handler
+.thumb_set  NMI_Handler, Default_Handler
+
+.weak       HardFault_Handler
+.thumb_set  HardFault_Handler, Default_Handler
+
+.weak       MemManage_Handler
+.thumb_set  MemManage_Handler, Default_Handler
+
+.weak       BusFault_Handler
+.thumb_set  BusFault_Handler, Default_Handler
+
+.weak       UsageFault_Handler
+.thumb_set  UsageFault_Handler, Default_Handler
+
+.weak       SVC_Handler
+.thumb_set  SVC_Handler, Default_Handler
+
+.weak       DebugMon_Handler
+.thumb_set  DebugMon_Handler, Default_Handler
+
+.weak       PendSV_Handler
+.thumb_set  PendSV_Handler, Default_Handler
+
+.weak       SysTick_Handler
+.thumb_set  SysTick_Handler, Default_Handler
 
 
 
