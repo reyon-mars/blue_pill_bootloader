@@ -130,3 +130,63 @@ vector_table:
 @ =================================================================
 
 
+@ "ax" = Tell the assembler that the section is allocatable and executable
+.section .text.Reset_Handler, "ax", %progbits
+
+@ Thumb instruction set, force the linker to set the lowest address bit to 1
+.thumb_func
+
+@ Define the Reset_Handler lable and make it global (visible to external files)
+.global Reset_Handler
+
+@ Registers the lable as an executable function instead of a raw data 
+.type   Reset_Handler, %function
+
+Reset_Handler:
+    @ ─────────────────────────────────────────────────────────────
+    @ STEP 1: Reinitialize the Main Stack Pointer
+    @
+    @ The hardware already loaded MSP from vector_table[0] before
+    @ branching here, which might seem redundant, But a warm reset
+    @ (reset via NVIC SYSRESETREQ or watchdog) does NOT reload the MSP from the 
+    @ vector table. It jumps to Reset_Handler with whatever SP value was current.
+    @ If the stack was deep in the middle of a function call, we would corrupt
+    @ our own stack
+    @ ─────────────────────────────────────────────────────────────
+    ldr     r0, =__stack_top
+    msr     msp, r0
+
+    @ ─────────────────────────────────────────────────────────────
+    @ STEP 2: Copy .data section from Flash (LMA) to SRAM (VMA)
+    @ 
+    @ Register assignment:
+    @   r0 = source pointer, walks from __data_load toward flash
+    @   r1 = destination pointer, walks from __data_start toward __data_end
+    @   r2 = one past the last destination byte (__data_end)
+    @   r3 = scratch register for the 32-bit word being transferred
+    @
+    @ We copy 4 bytes ( one word ) at a time. Both regions are word-aligned
+    @ (guaranteed by the linker script), so this is safe.
+    @
+    @ 'ldr r3, [r0], #4' is a post index load:
+    @   Load the word AT address r0 into r3, THEN add 4 to r0.
+    @   This instruction loads the word and then advances the pointer.
+    @ 'str r3, [r1], #4' is the corresponding post-index store.
+    @ ─────────────────────────────────────────────────────────────
+    ldr     r0, =__data_load    @ r0 -> LMA: initial values in flash
+    ldr     r1, =__data_start   @ r1 -> VMA: destination in SRAM
+    ldr     r2, =__data_end     @ r2 -> one past last byte to copy
+
+.L_data_copy:
+    cmp     r1, r2              @ Is destination pointer >= end ? 
+    bhs     .L_data_copy_done   @ If so, we're done ( bhs: branch if higher or same )
+    ldr     r3, [r0], #4        @ Load 4 bytes from flash, advance source by 4
+    str     r3, [r1], #4        @ Store 4 bytes to SRAM, advance dest by 4
+    b       .L_data_copy        @ Branch to the .L_data_copy lable again
+.L_data_copy_done:
+
+    
+    
+
+
+
