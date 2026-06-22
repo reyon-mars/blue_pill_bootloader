@@ -133,5 +133,74 @@ namespace RCC_APB1ENR_bits {
 //      11 = RESERVED
 // =================================================================
 struct GPIO_t {
-    vu32
+    vu32 CRL;           // 0x00 Config Low: pins 0-7 (4 bits per pin)
+    vu32 CRH;           // 0x04 Config High: pins 8-15 (4 bits per pin)
+    vu32 IDR;           // 0x08 Input Data (read-only; reflects pin voltage)
+    vu32 ODR;           // 0x0C Output Data (write to drive pins -- NOT ATOMIC!)
+    vu32 BSRR;          // 0x10 Bit Set/Reset - ATOMIC pin control:
+                        //      Bits [15:0] set pin n HIGH (write 1 to bit n)
+                        //      Bits [31:16] reset pin n LOW (write 1 to bit n+16)
+                        //      Bits written 0 are ignored.
+    vu32 BRR;           // 0x14 Bit reset register (write 1 to bit n -> pin n LOW )
+    vu32 LCKR;          // 0x18 Configuration lock
 };
+
+static_assert(sizeof(GPIO_t) == 28, "GPIO_t size mismatch" );
+
+static GPIO_t* const GPIOA = reinterpret_cast<GPIO_t*>(0x40010800U);
+static GPIO_t* const GPIOC = reinterpret_cast<GPIO_t*>(0x40011000U);
+
+
+// =================================================================
+// FLASH - Flash Programming Interface (FPEC)
+// Base Address: 0x40022000
+//
+// The CPU can READ flash freely, but WRITING requires:
+//  1. Unlocking the FPEC with a key sequence (security feature)
+//  2. Erasing a full 1KB page (flash can only erase, not overwrite)
+//  3. Writing in 16-bit halfwords (the flash array is 16 bits wide)
+// =================================================================
+struct FLASH_t{
+    vu32 ACR;           // 0x00 Access control (flash wait states and latency )
+    vu32 KEYR;          // 0x04 Key register - write magic values to unlock
+    vu32 OPTKEYR;       // 0x08 Option bytes key register
+    vu32 SR;            // 0x0C Status register (BSY,EOP,errors)
+    vu32 CR;            // 0x10 Control register (PG,PER,MER,STRT,LOCK)
+    vu32 AR;            // 0x14 Address register (for erase operations)
+    vu32 RESERVED;
+    vu32 OBR;           // 0x1C Option Byte Register (read-only reflection)
+    vu32 WRPR;          // 0x20 Write Protection Register
+};
+
+static_assert(sizeof(FLASH_t) == 36, "FLASH_t size mismatch" );
+
+static FLASH_t* const FLASH = reinterpret_cast<FLASH_t*>(0x40022000U);
+
+
+namespace FLASH_bits {
+    // ACR - wait states required based on SYSCLK frequency
+    // 0-24 MHz: 0 wait states
+    // 24-48 MHz: 1 wait state
+    // 48-72 MHz: 2 wait states
+    constexpr u32 ACR_LATENCY_0WS   = ( 0x0U << 0 );
+    constexpr u32 ACR_LATENCY_1WS   = ( 0x1U << 0 );
+    constexpr u32 ACR_LATENCY_2WS   = ( 0x2U << 0 );
+    constexpr u32 ACR_PRFTBE        = ( 1U << 4 );      // Prefetch buffer enable
+    // CR - programming / erase control
+    constexpr u32 CR_PG     = ( 1U << 0 );      // Programming enable
+    constexpr u32 CR_PER    = ( 1U << 1 );      // Page erase enable
+    constexpr u32 CR_MER    = ( 1U << 2 );      // Mass erase enable
+    constexpr u32 CR_STRT   = ( 1U << 6 );      // Start erase operation
+    constexpr u32 CR_LOCK   = ( 1U << 7 );      // Lock the FPEC (protect writes)
+    // SR - Status bits
+    constexpr u32 SR_BSY    = ( 1U << 0 );      // Flash busy (operation in progress)
+    constexpr u32 SR_EOP    = ( 1U << 5 );      // End of operation flag
+    constexpr u32 SR_WRPRTERR = ( 1U << 4 );    // Write protection error
+    // Unlock key sequence
+    // Writing these exact values to FLASH->KEYR, in order, unlocks the FPEC.
+    // Any wrong value, or writing KEYR when already unlocked, triggers a HardFault.
+    constexpr u32 KEYR_KEY1 = 0x45670123U;
+    constexpr u32 KEYR_KEY2 = 0xCDEF89ABU;
+}
+
+/* This is the END ('_') */
