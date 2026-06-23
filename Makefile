@@ -67,5 +67,67 @@ ASFLAGS	= $(ARCH_FLAGS)
 
 # ------------------------------------------------------------------
 # Linker Flags: 
-#
-#------------------------------------------------------------------
+#	-T linker.ld		: Use our custom linker script (not the default one)
+#	--gc-sections		: Remove any section not reachable from the entry point.
+#						  This is the garbage collection pass that removes unused
+#						  functions and data we compiled but never called.
+#						  Works together with -ffunction-sections / -fdata-sections.
+#	-nostdlib			: Don't link crtbegin/crtend or libc (no standard startup)
+#	-nostartfiles		: Don't use standard startup files (we provide startup.s)
+#	--print-memory-usage : Print a summary of flash/SRAM usage after linking
+# ------------------------------------------------------------------
+LDFLAGS		 = -T linker.ld
+LDFLAGS		+= -Wl,--gc-sections
+LDFLAGS		+= -Wl,--print-memory-usage
+LDFLAGS		+= -nostdlib
+LDFLAGS		+= -nostartfiles
+
+
+TARGET 		= bootloader
+SRCDIR		= src 
+OBJDIR		= build 
+
+# ------------------------------------------------------------------
+# Source files
+# ------------------------------------------------------------------
+CXX_SRCS	= $(SRCDIR)/main.cpp
+AS_SRCS		= $(SRCDIR)/startup.s 
+
+# ------------------------------------------------------------------
+# Object files
+#	$(Variable: FindPattern = ReplacePattern)
+# ------------------------------------------------------------------
+CXX_OBJS	= $(CXX_SRCS: $(SRCDIR)/%.cpp = $(OBJDIR)/%.o)
+AS_OBJS		= $(AS_SRCS: $(SRCDIR)/%.s = $(OBJDIR)/%.o)
+ALL_OBJS	= $(AS_OBJS) $(CXX_OBJS)
+
+
+# ------------------------------------------------------------------
+# Default target: build the .bin file
+# .elf -> ELF binary (contains debug info, section metadata - for GDB)
+# .bin -> raw binary image (stripped, no metadata - what we write to flash)
+# .hex -> Intel HEX format (alternative flash format for some tools)
+# ------------------------------------------------------------------
+all: $(OBJDIR)/$(TARGET).bin
+
+$(OBJDIR):
+	mkdir -p $(OBJDIR)
+
+# ------------------------------------------------------------------
+# Assemble .s files
+# ------------------------------------------------------------------
+$(OBJDIR)/%.o: $(SRCDIR)/%.s | $(OBJDIR)
+	$(CXX) $(ASFLAGS) -c $< -o $@
+
+# ------------------------------------------------------------------
+# Compile .cpp files
+# ------------------------------------------------------------------
+$(OBJDIR)/%.o: $(SRCDIR)/%.cpp | $(OBJDIR)
+	$(CXX) $(CXXFLAGS) -c $< -o $@
+
+# ------------------------------------------------------------------
+# Link all objects into ELF
+# ------------------------------------------------------------------
+$(OBJDIR)/$(TARGET).elf: $(ALL_OBJS)
+	$(CXX) $(CXXFLAGS) $(LDFLAGS) $^ -o $@
+	$(SIZE) $@
