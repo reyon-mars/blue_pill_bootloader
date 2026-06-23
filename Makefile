@@ -131,3 +131,33 @@ $(OBJDIR)/%.o: $(SRCDIR)/%.cpp | $(OBJDIR)
 $(OBJDIR)/$(TARGET).elf: $(ALL_OBJS)
 	$(CXX) $(CXXFLAGS) $(LDFLAGS) $^ -o $@
 	$(SIZE) $@
+	
+# ------------------------------------------------------------------
+# Strip ELF to raw binary
+#	-O binary 	: output format is raw binary
+#	-S			: don't copy relocation info and symbol table
+# ------------------------------------------------------------------
+$(OBJDIR)/$(TARGET).bin: $(OBJDIR)/$(TARGET).elf
+	$(OBJCOPY) -O binary -S $< $@
+
+# ------------------------------------------------------------------
+# Also produce .HEX for tools that prefer it
+# ------------------------------------------------------------------
+$(OBJDIR)/$(TARGET).hex: $(OBJDIR)/$(TARGET).elf
+	$(OBJCOPY) -O ihex $< $@
+
+# ------------------------------------------------------------------
+# Clean
+# ------------------------------------------------------------------
+clean:
+	rm -rf $(OBJDIR)
+
+# ------------------------------------------------------------------
+# FLASH
+# ------------------------------------------------------------------
+flash: $(OBJDIR)/$(TARGET).bin
+	openocd -f interface/cmsis-dap.cfg -f target/stm32f1x.cfg \
+	-c "program $(OBJDIR)/$(TARGET).bin verify reset exit 0x08000000"
+
+.PHONY: all clean flash
+	
