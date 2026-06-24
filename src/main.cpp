@@ -23,9 +23,9 @@ int main()
 
     while( true ){
         GPIOC->BSRR = PC13_RESET;
-        delay( 500000);
+        delay( 5000000);
         GPIOC->BSRR = PC13_SET;
-        delay( 500000);
+        delay( 5000000);
     }
     return 0;
 }
