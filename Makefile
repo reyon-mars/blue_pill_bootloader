@@ -11,7 +11,7 @@ CC		= $(PREFIX)gcc
 CXX		= $(PREFIX)g++
 AS		= $(PREFIX)as
 OBJCOPY	= $(PREFIX)objcopy
-SIZE	= $(PREFIX)size 
+SIZE	= $(PREFIX)size
 
 # ------------------------------------------------------------------
 # Target: STM32F103C8T6 is Cortex-M3
@@ -83,22 +83,22 @@ LDFLAGS		+= -nostdlib
 LDFLAGS		+= -nostartfiles
 
 
-TARGET 		= bootloader
-SRCDIR		= src 
-OBJDIR		= build 
+TARGET 		= blue_pill_bootloader
+SRCDIR		= src
+OBJDIR		= build
 
 # ------------------------------------------------------------------
 # Source files
 # ------------------------------------------------------------------
 CXX_SRCS	= $(SRCDIR)/main.cpp
-AS_SRCS		= $(SRCDIR)/startup.s 
+AS_SRCS		= $(SRCDIR)/startup.s
 
 # ------------------------------------------------------------------
 # Object files
 #	$(Variable: FindPattern = ReplacePattern)
 # ------------------------------------------------------------------
-CXX_OBJS	= $(CXX_SRCS: $(SRCDIR)/%.cpp = $(OBJDIR)/%.o)
-AS_OBJS		= $(AS_SRCS: $(SRCDIR)/%.s = $(OBJDIR)/%.o)
+CXX_OBJS	= $(CXX_SRCS: $(SRCDIR)/%.cpp=$(OBJDIR)/%.o)
+AS_OBJS		= $(AS_SRCS: $(SRCDIR)/%.s=$(OBJDIR)/%.o)
 ALL_OBJS	= $(AS_OBJS) $(CXX_OBJS)
 
 
@@ -117,7 +117,7 @@ $(OBJDIR):
 # Assemble .s files
 # ------------------------------------------------------------------
 $(OBJDIR)/%.o: $(SRCDIR)/%.s | $(OBJDIR)
-	$(CXX) $(ASFLAGS) -c $< -o $@
+	$(AS) $(ASFLAGS) -c $< -o $@
 
 # ------------------------------------------------------------------
 # Compile .cpp files
