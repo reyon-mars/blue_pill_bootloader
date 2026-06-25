@@ -203,4 +203,38 @@ namespace FLASH_bits {
     constexpr u32 KEYR_KEY2 = 0xCDEF89ABU;
 }
 
+// =================================================================
+// SysTick - ARM Cortex-M System Timer
+// Base Address: 0xE000E010 (System Control Space)
+//
+// SysTick is part of the ARM Cortex-M3 architecture specification,
+// NOT an STM32-specific peripheral. It exists identically at this 
+// address on every Cortex-M processor from any silicon vendor.
+// 
+// It is a 24-bit down-counter:
+//  -> Loaded with RELOAD value when started or when it reaches 0
+//  -> Counts: RELOAD -> RELOAD - 1 -> .....-> 1 -> 0 -> (fires) -> RELOAD
+//  -> Period = (RELOAD + 1) / f_cpu
+//  -> For 1ms at 48MHz: (RELOAD + 1 ) = 48,000 -> RELOAD = 47,999
+//  -> Maximum RELOAD: 2^24 - 1 = 16,777,215 (24-bit limit)
+// =================================================================
+struct SysTick_t{
+    vu32 CSR;           // 0x00 Control and Status
+    vu32 RVR;           // 0x04 Reload Value Register ( 24-bit )
+    vu32 CVR;           // 0x08 Current Value Register (write any value to clear to 0)
+    vu32 CALIB;         // 0x0C CALIBration (read-only, chip-specific)
+};
+
+static_assert(sizeof(SysTick_t) == 16, "SysTick_t size mismatch");
+
+static SysTick_t* const SysTick = reinterpret_cast<SysTick_t*>(0xE000E010U);
+
+namespace SysTick_bits {
+    constexpr u32
+}
+
+
+
+
+
 /* This is the END ('_') */
