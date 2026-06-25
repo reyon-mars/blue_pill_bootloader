@@ -230,7 +230,10 @@ static_assert(sizeof(SysTick_t) == 16, "SysTick_t size mismatch");
 static SysTick_t* const SysTick = reinterpret_cast<SysTick_t*>(0xE000E010U);
 
 namespace SysTick_bits {
-    constexpr u32
+    constexpr u32 CSR_ENABLE    = ( 1U << 0 );      // 
+    constexpr u32 CSR_TICKINT   = ( 1U << 1 );      // 
+    constexpr u32 CSR_CLKSOURCE = ( 1U << 2 );      // 
+    constexpr u32 CSR_COUNTFLAG = ( 1U << 16 );     // 
 }
 
 
