@@ -44,4 +44,41 @@ void delay_ms(u32 ms){
 // =================================================================
 // clock_init()
 //
-// Configures 
+// Configures SYSCLK = 48 MHz from HSI via PLL.
+//
+// Starting state (guaranteed by hardware reset):
+//      -> SYSCLK = HSI = 8 MHz
+//      -> PLL = OFF
+//      -> AHB/APB prescalers = /1
+//      -> FLASH wait states  = 0
+//      -> All Peripheral Clocks = OFF (except RCC, SRAM, FLASH)
+// =================================================================
+void clock_init(){
+    
+    // ─────────────────────────────────────────────────────────────
+    // STEP 1: FLASH wait states MUST come before any Clock increase.
+    //
+    // Currently at 8 MHz: 0 wait states are correct.
+    // After switch to 48 MHz: 1 wait state required.
+    // We need to configure wait states at 8 MHz, because this write
+    // itself requires 0 wait states to execute correctly and is in 
+    // place before the frequency rises.
+    //
+    // If we raised frequency first then set wait states:
+    //  -> The fetch of THIS very instruction would be corrupted.
+    //  -> We would likely never reach the wait state configuration.
+    //
+    // ACR_PRFTBE: enable 2-word (64 Bytes) prefetch buffer. Speculatively 
+    // reads next word while CPU executes current instruction. Recovers most 
+    // of the wait state throughput penalty for sequential code.
+    // ─────────────────────────────────────────────────────────────
+    FLASH->ACR  =   FLASH_bits::ACR_LATENCY_1WS | FLASH_bits::ACR_PRFTBE;
+    
+    // ─────────────────────────────────────────────────────────────
+    // STEP 2: Configure CFGR before enabling PLL.
+    // 
+    // RM0008 Section
+
+
+
+}
