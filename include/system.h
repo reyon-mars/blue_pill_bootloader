@@ -32,7 +32,7 @@ u32 get_tick_ms();
 // Busy-Wait for exactly ms milliseconds.
 // Requires systick_init(). Minimum granularity: 1 ms.
 // =================================================================
-void delay_ms();
+void delay_ms( u32 ms );
 
 
 /* This is the END. */
