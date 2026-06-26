@@ -230,14 +230,12 @@ static_assert(sizeof(SysTick_t) == 16, "SysTick_t size mismatch");
 static SysTick_t* const SysTick = reinterpret_cast<SysTick_t*>(0xE000E010U);
 
 namespace SysTick_bits {
-    constexpr u32 CSR_ENABLE    = ( 1U << 0 );      // 
-    constexpr u32 CSR_TICKINT   = ( 1U << 1 );      // 
-    constexpr u32 CSR_CLKSOURCE = ( 1U << 2 );      // 
-    constexpr u32 CSR_COUNTFLAG = ( 1U << 16 );     // 
+    constexpr u32 CSR_ENABLE    = ( 1U << 0 );      // 1 = start counting, 0 = stop
+    constexpr u32 CSR_TICKINT   = ( 1U << 1 );      // 1 = fire SysTick exception at zero
+    constexpr u32 CSR_CLKSOURCE = ( 1U << 2 );      // 1 = CPU Clock (48 MHz), 
+                                                    // 0 = CPU Clock / 8 (6 MHz)
+    constexpr u32 CSR_COUNTFLAG = ( 1U << 16 );     // Set when counter reaches 0,
+                                                    // Cleared automatically on CSR read 
 }
-
-
-
-
 
 /* This is the END ('_') */
