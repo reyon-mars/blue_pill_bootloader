@@ -77,7 +77,12 @@ void clock_init(){
     // ─────────────────────────────────────────────────────────────
     // STEP 2: Configure CFGR before enabling PLL.
     // 
-    // RM0008 Section
+    // RM0008 Section 7.3.2 states explicitly:
+    //      "PLLSRC and PLLMUL bits can be written only when PLL is 
+    //       disabled (PLLON = 0)."
+    //      "The reset state of CFGR is also guaranteed to be 0x00000000
+    //       (all zeros)."
+    //
 
 
 
