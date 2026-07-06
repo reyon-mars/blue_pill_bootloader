@@ -227,7 +227,7 @@ struct SysTick_t{
 
 static_assert(sizeof(SysTick_t) == 16, "SysTick_t size mismatch");
 
-static SysTick_t* const SysTick = reinterpret_cast<SysTick_t*>(0xE000E010U);
+static SysTick_t* const SYSTICK = reinterpret_cast<SysTick_t*>(0xE000E010U);
 
 namespace SysTick_bits {
     constexpr u32 CSR_ENABLE    = ( 1U << 0 );      // 1 = start counting, 0 = stop
