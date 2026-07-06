@@ -114,7 +114,48 @@ void clock_init(){
     // PLL is locked. The chip would lose its clock entirely.
     // ─────────────────────────────────────────────────────────────
     RCC->CR |= RCC_CR_bits::PLLON;
+
+    // ─────────────────────────────────────────────────────────────
+    // STEP 4: Poll until PLL is locked.
+    //
+    // The PLL's feedback loop (phase comparator -> charge pump -> VCO)
+    // requires ~200 microseconds to converge from initial acquisition
+    // to stable lock at 48 MHz.
+    //
+    // During these ~200 microseconds, VCO output sweeps from its power-on
+    // frequency up toward 48 MHz, it is NOT yet 48 MHz.
+    //
+    // PLLRDY is a read-only bit set by the hardware when the phase
+    // detector confirms feedback equals reference.
+    // ─────────────────────────────────────────────────────────────
+    while( !(RCC->CR & RCC_CR_bits::PLLRDY) ) {}
     
+    // ─────────────────────────────────────────────────────────────
+    // STEP 5: Request Clock Switch to PLL.
+    //
+    // SW[1:0] = 10 selects PLL output as SYSCLK source.
+    // The clock MUX responds in the analog clock domain, which takes
+    // a few clock cycles after this write.
+    //
+    // We use |= to add SW_PLL to CFGR without disturbing the PLL
+    // configuration bits (PLLSRC, PLLMUL, PPRE1/2, HPRE) we wrote earlier.
+    // ─────────────────────────────────────────────────────────────
+    RCC->CFGR |= RCC_CFGR_bits::SW_PLL;
 
-
+    // ─────────────────────────────────────────────────────────────
+    // STEP 6: Wait for Clock Switch to complete.
+    //
+    // SWS[1:0] reflects the CURRENTLY ACTIVE SYSCLK source.
+    // It lags SW by a few cycles as the MUX settles.
+    // ─────────────────────────────────────────────────────────────
+    while( (RCC->CFGR & RCC_CFGR_bits::SWS_MASK) != RCC_CFGR_bits::SWS_PLL ) {}
+    
+    // ─────────────────────────────────────────────────────────────
+    // DONE. From this point
+    //      SYSCLK  = 48 MHz    (SWS == PLL)
+    //      HCLK    = 48 MHz    (AHB prescaler / 1)
+    //      APB1    = 24 MHz    (prescaler / 2)
+    //      APB2    = 48 MHz    (prescaler / 1)
+    //      USB     = 48 MHz    (from PLL via USBPRE = 1)
+    // ─────────────────────────────────────────────────────────────
 }
