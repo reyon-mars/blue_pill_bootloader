@@ -105,7 +105,16 @@ void clock_init(){
               | RCC_CFGR_bits::PPRE2_DIV1;
               
     // ─────────────────────────────────────────────────────────────
-    // STEP 3:
+    // STEP 3: Enable the PLL.
+    //
+    // We need to use |= here, instead of a full assignment because
+    // the HSION (bit 0) controls the HSI oscillator. If we wrote
+    // a full assignment with HSION = 0, we would turn off HSI, which
+    // is the clock source we are CURRENTLY RUNNING FROM, before the
+    // PLL is locked. The chip would lose its clock entirely.
+    // ─────────────────────────────────────────────────────────────
+    RCC->CR |= RCC_CR_bits::PLLON;
+    
 
 
 }
