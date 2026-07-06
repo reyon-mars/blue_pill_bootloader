@@ -89,11 +89,23 @@ void clock_init(){
     //      The /2 is fixed in hardware, HSI cannot feed PLL directly.
     //  PLLMUL_12: 4 MHz x 12 = 48 MHz PLL output.
     //  USBPRE_DIV1: USB clock = PLL / 1 = 48 MHz.
-    //      (Use DIV1.5 only when PLL = 72 MHz: 72/1.5 = 48 MHz.)    
-    // 
-    //
+    //      (Use DIV1.5 only when PLL = 72 MHz: 72/1.5 = 48 MHz.)  
+    //  HPRE_DIV1: HCLK = SYSCLK = 48 MHz.
+    //  PPRE1_DIV2: APB1 = HCLK / 2 = 24 MHz.
+    //      REQUIRED: RM0008 specifies APB1 maximum = 36 MHz.
+    //      Exceeding this violates timing specs of I2C, SPI2, etc.
+    //      24 MHz gives comfortable margin below the 36 MHz limit.
+    //  PPRE2_DIV1: APB2 = HCLK = 48 MHz. GPIO, SPI1, USART1 are here.  
     // ─────────────────────────────────────────────────────────────
-
+    RCC->CFGR = RCC_CFGR_bits::PLLSRC_HSI_DIV2
+              | RCC_CFGR_bits::PLLMUL_12
+              | RCC_CFGR_bits::USBPRE_DIV1
+              | RCC_CFGR_bits::HPRE_DIV1
+              | RCC_CFGR_bits::PPRE1_DIV2
+              | RCC_CFGR_bits::PPRE2_DIV1;
+              
+    // ─────────────────────────────────────────────────────────────
+    // STEP 3:
 
 
 }
