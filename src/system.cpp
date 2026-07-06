@@ -1,4 +1,4 @@
-#include "../include/system.h"
+#include "../include/system.hpp"
 
 // =================================================================
 // INTERNAL STATE ( g_ms )
@@ -80,9 +80,19 @@ void clock_init(){
     // RM0008 Section 7.3.2 states explicitly:
     //      "PLLSRC and PLLMUL bits can be written only when PLL is 
     //       disabled (PLLON = 0)."
-    //      "The reset state of CFGR is also guaranteed to be 0x00000000
-    //       (all zeros)."
+    //      "The reset state of RCC_CFGR is also guaranteed to be 0x00000000
+    //       (all set to zeroes)."
     //
+    // Configuration rationale:
+    //  PLLSRC_HSI_DIV2: PLL input = 8 MHz / 2 = 4 MHz.
+    //      (HSE is not populated on most Blue Pill; must use HSI/2.)
+    //      The /2 is fixed in hardware, HSI cannot feed PLL directly.
+    //  PLLMUL_12: 4 MHz x 12 = 48 MHz PLL output.
+    //  USBPRE_DIV1: USB clock = PLL / 1 = 48 MHz.
+    //      (Use DIV1.5 only when PLL = 72 MHz: 72/1.5 = 48 MHz.)    
+    // 
+    //
+    // ─────────────────────────────────────────────────────────────
 
 
 
