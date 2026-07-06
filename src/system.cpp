@@ -159,3 +159,36 @@ void clock_init(){
     //      USB     = 48 MHz    (from PLL via USBPRE = 1)
     // ─────────────────────────────────────────────────────────────
 }
+
+
+// =================================================================
+// systick_init()
+//
+// Must be called AFTER clock_init(). The RELOAD value is computed
+// assuming SYSCLK = 48 MHz. If called before clock_init(), each
+// "tick" would be 6 ms instead of 1 ms (8 MHz / 48 MHz = 1/6).
+//
+// SysTick reload formula:
+//      RELOAD  = (f_cpu / f_desired_tick) - 1
+//      RELOAD  = (48,000,000 / 1,000) - 1
+//      RELOAD  = (48,000) - 1
+//      RELOAD  = 47,999
+//
+// The "-1" accounts for the counter's behavior: it counts from
+// RELOAD down to 0 inclusive, then fires. That is (RELOAD + 1)
+// distinct states = (RELOAD + 1) clock cycles per tick.
+// If RELOAD = 47,999: counter visits 47,999 states (47999 to 1)
+// plus state 0 = 48,000 clock cycles.
+// =================================================================
+void systick_init(){
+    SYSTICK->RVR = 47'999U; // RELOAD: 48,000 ticks x (1/48 MHz) = 1 ms
+    SYSTICK->CVR = 0U;      // Clear Current Count and COUNTFLAG before starting
+    
+    // Start SysTick:
+    //      CSR_ENABLE      : Activate the counter
+    //      CSR_TICKINT     : Fire SysTick exception (vector 15) on reaching zero
+    //      CSR_CLKSOURCE   : Use processor clock (48 MHz), not the / 8 option (6 MHz)
+    SYSTICK->CSR = SysTick_bits::CSR_ENABLE
+                 | SysTick_bits::CSR_TICKINT
+                 | SysTick_bits::CSR_CLKSOURCE;
+}
