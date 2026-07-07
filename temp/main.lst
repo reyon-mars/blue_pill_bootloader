@@ -1,0 +1,158 @@
+   1              		.cpu cortex-m3
+   2              		.arch armv7-m
+   3              		.fpu softvfp
+   4              		.eabi_attribute 20, 1
+   5              		.eabi_attribute 21, 1
+   6              		.eabi_attribute 23, 3
+   7              		.eabi_attribute 24, 1
+   8              		.eabi_attribute 25, 1
+   9              		.eabi_attribute 26, 1
+  10              		.eabi_attribute 30, 1
+  11              		.eabi_attribute 34, 1
+  12              		.eabi_attribute 18, 4
+  13              		.file	"main.cpp"
+  14              		.text
+  15              	.Ltext0:
+  16              		.cfi_sections	.debug_frame
+  17              		.file 1 "src/main.cpp"
+  18              		.section	.text._ZL5delaym,"ax",%progbits
+  19              		.align	1
+  20              		.syntax unified
+  21              		.thumb
+  22              		.thumb_func
+  24              	_ZL5delaym:
+  25              	.LVL0:
+  26              	.LFB3:
+   1:src/main.cpp  **** #include "../include/stm32f103.hpp"
+   2:src/main.cpp  **** 
+   3:src/main.cpp  **** static void delay( vu32 count )
+   4:src/main.cpp  **** {
+  27              		.loc 1 4 1 view -0
+  28              		.cfi_startproc
+  29              		@ args = 0, pretend = 0, frame = 8
+  30              		@ frame_needed = 0, uses_anonymous_args = 0
+  31              		@ link register save eliminated.
+  32              		.loc 1 4 1 is_stmt 0 view .LVU1
+  33 0000 82B0     		sub	sp, sp, #8
+  34              		.cfi_def_cfa_offset 8
+  35 0002 0190     		str	r0, [sp, #4]
+   5:src/main.cpp  ****     while( count-- ){
+  36              		.loc 1 5 5 is_stmt 1 view .LVU2
+  37              	.L2:
+  38              		.loc 1 5 17 discriminator 1 view .LVU3
+  39 0004 019B     		ldr	r3, [sp, #4]
+  40 0006 5A1E     		subs	r2, r3, #1
+  41 0008 0192     		str	r2, [sp, #4]
+  42 000a 002B     		cmp	r3, #0
+  43 000c FAD1     		bne	.L2
+   6:src/main.cpp  ****         // Empty. The compiler might optimize this away, so make count a volatile.       
+   7:src/main.cpp  ****     }
+   8:src/main.cpp  **** }
+  44              		.loc 1 8 1 is_stmt 0 view .LVU4
+  45 000e 02B0     		add	sp, sp, #8
+  46              		.cfi_def_cfa_offset 0
+  47              		@ sp needed
+  48 0010 7047     		bx	lr
+  49              		.cfi_endproc
+  50              	.LFE3:
+  52              		.section	.text.main,"ax",%progbits
+  53              		.align	1
+  54              		.global	main
+  55              		.syntax unified
+  56              		.thumb
+  57              		.thumb_func
+  59              	main:
+  60              	.LFB4:
+   9:src/main.cpp  **** 
+  10:src/main.cpp  **** int main()
+  11:src/main.cpp  **** {
+  61              		.loc 1 11 1 is_stmt 1 view -0
+  62              		.cfi_startproc
+  63              		@ args = 0, pretend = 0, frame = 0
+  64              		@ frame_needed = 0, uses_anonymous_args = 0
+  65 0000 38B5     		push	{r3, r4, r5, lr}
+  66              		.cfi_def_cfa_offset 16
+  67              		.cfi_offset 3, -16
+  68              		.cfi_offset 4, -12
+  69              		.cfi_offset 5, -8
+  70              		.cfi_offset 14, -4
+  12:src/main.cpp  **** 
+  13:src/main.cpp  ****     RCC->APB2ENR |= RCC_APB2ENR_bits::IOPCEN;
+  71              		.loc 1 13 5 view .LVU6
+  72              		.loc 1 13 10 is_stmt 0 view .LVU7
+  73 0002 0E4A     		ldr	r2, .L7
+  74 0004 9369     		ldr	r3, [r2, #24]
+  75              		.loc 1 13 18 view .LVU8
+  76 0006 43F01003 		orr	r3, r3, #16
+  77 000a 9361     		str	r3, [r2, #24]
+  14:src/main.cpp  ****     
+  15:src/main.cpp  ****     constexpr u32 PC13_CONFIG_SHIFT = ( 13 - 8 ) * 4;
+  78              		.loc 1 15 5 is_stmt 1 view .LVU9
+  79              	.LVL1:
+  16:src/main.cpp  ****     constexpr u32 PC13_CLEAR_MASK   = ~( 0xFU << PC13_CONFIG_SHIFT );
+  80              		.loc 1 16 5 view .LVU10
+  17:src/main.cpp  ****     constexpr u32 PC13_OUTPUT_50MHZ = ( 0b0011 << PC13_CONFIG_SHIFT );
+  81              		.loc 1 17 5 view .LVU11
+  18:src/main.cpp  ****     
+  19:src/main.cpp  ****     GPIOC->CRH = ( GPIOC->CRH & PC13_CLEAR_MASK ) | PC13_OUTPUT_50MHZ;
+  82              		.loc 1 19 5 view .LVU12
+  83              		.loc 1 19 27 is_stmt 0 view .LVU13
+  84 000c A2F58032 		sub	r2, r2, #65536
+  85 0010 5368     		ldr	r3, [r2, #4]
+  86              		.loc 1 19 31 view .LVU14
+  87 0012 23F47003 		bic	r3, r3, #15728640
+  88              		.loc 1 19 51 view .LVU15
+  89 0016 43F44013 		orr	r3, r3, #3145728
+  90              		.loc 1 19 16 view .LVU16
+  91 001a 5360     		str	r3, [r2, #4]
+  20:src/main.cpp  ****     
+  21:src/main.cpp  ****     constexpr u32 PC13_SET = ( 1U << 13 );
+  92              		.loc 1 21 5 is_stmt 1 view .LVU17
+  93              	.LVL2:
+  22:src/main.cpp  ****     constexpr u32 PC13_RESET = (1U << ( 16 + 13 ));
+  94              		.loc 1 22 5 view .LVU18
+  95              	.L5:
+  23:src/main.cpp  **** 
+  24:src/main.cpp  ****     while( true ){
+  96              		.loc 1 24 5 view .LVU19
+  25:src/main.cpp  ****         GPIOC->BSRR = PC13_RESET;
+  97              		.loc 1 25 9 view .LVU20
+  98              		.loc 1 25 21 is_stmt 0 view .LVU21
+  99 001c 084D     		ldr	r5, .L7+4
+ 100 001e 4FF00053 		mov	r3, #536870912
+ 101 0022 2B61     		str	r3, [r5, #16]
+  26:src/main.cpp  ****         delay( 500000);
+ 102              		.loc 1 26 9 is_stmt 1 view .LVU22
+ 103              		.loc 1 26 14 is_stmt 0 view .LVU23
+ 104 0024 074C     		ldr	r4, .L7+8
+ 105 0026 2046     		mov	r0, r4
+ 106 0028 FFF7FEFF 		bl	_ZL5delaym
+ 107              	.LVL3:
+  27:src/main.cpp  ****         GPIOC->BSRR = PC13_SET;
+ 108              		.loc 1 27 9 is_stmt 1 view .LVU24
+ 109              		.loc 1 27 21 is_stmt 0 view .LVU25
+ 110 002c 4FF40053 		mov	r3, #8192
+ 111 0030 2B61     		str	r3, [r5, #16]
+  28:src/main.cpp  ****         delay( 500000);
+ 112              		.loc 1 28 9 is_stmt 1 discriminator 1 view .LVU26
+ 113              		.loc 1 28 14 is_stmt 0 discriminator 1 view .LVU27
+ 114 0032 2046     		mov	r0, r4
+ 115 0034 FFF7FEFF 		bl	_ZL5delaym
+ 116              	.LVL4:
+  24:src/main.cpp  ****         GPIOC->BSRR = PC13_RESET;
+ 117              		.loc 1 24 5 is_stmt 1 view .LVU28
+ 118 0038 F0E7     		b	.L5
+ 119              	.L8:
+ 120 003a 00BF     		.align	2
+ 121              	.L7:
+ 122 003c 00100240 		.word	1073876992
+ 123 0040 00100140 		.word	1073811456
+ 124 0044 20A10700 		.word	500000
+ 125              		.cfi_endproc
+ 126              	.LFE4:
+ 128              		.text
+ 129              	.Letext0:
+ 130              		.file 2 "/usr/lib/gcc/arm-none-eabi/14.2.1/include/stdint.h"
+ 131              		.file 3 "/usr/include/newlib/c++/14.2.1/cstdint"
+ 132              		.file 4 "src/../include/stm32f103.hpp"
+ 133              		.file 5 "/usr/include/newlib/c++/14.2.1/arm-none-eabi/thumb/v7-m/nofp/bits/c++config.h"

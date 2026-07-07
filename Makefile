@@ -108,8 +108,8 @@ AS_SRCS		= $(SRCDIR)/startup.s
 # Object files
 #	$(Variable: FindPattern = ReplacePattern)
 # ------------------------------------------------------------------
-CXX_OBJS	= $(CXX_SRCS: $(SRCDIR)/%.cpp=$(OBJDIR)/%.o)
-AS_OBJS		= $(AS_SRCS: $(SRCDIR)/%.s=$(OBJDIR)/%.o)
+CXX_OBJS	= $(CXX_SRCS:$(SRCDIR)/%.cpp=$(OBJDIR)/%.o)
+AS_OBJS		= $(AS_SRCS:$(SRCDIR)/%.s=$(OBJDIR)/%.o)
 ALL_OBJS	= $(AS_OBJS) $(CXX_OBJS)
 
 
@@ -127,7 +127,7 @@ TEMP_ASM	= $(CXX_SRCS:$(SRCDIR)/%.cpp=$(TEMPDIR)/%.as)
 # .bin -> raw binary image (stripped, no metadata - what we write to flash)
 # .hex -> Intel HEX format (alternative flash format for some tools)
 # ------------------------------------------------------------------
-all: $(OBJDIR)/$(TARGET).bin
+all: $(OBJDIR)/$(TARGET).bin debug_artifacts
 
 $(OBJDIR):
 	mkdir -p $(OBJDIR)
@@ -200,6 +200,7 @@ debug_artifacts: $(TEMP_LST) $(TEMP_ASM) $(TEMP_SU)
 # ------------------------------------------------------------------
 clean:
 	rm -rf $(OBJDIR) $(TEMPDIR)
+	mkdir -p $(OBJDIR) $(TEMPDIR)
 
 
 # ------------------------------------------------------------------

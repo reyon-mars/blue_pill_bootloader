@@ -1,0 +1,4 @@
+src/system.cpp:22:17:void SysTick_Handler()	0	static
+src/system.cpp:34:6:void delay_ms(u32)	0	static
+src/system.cpp:56:6:void clock_init()	0	static
+src/system.cpp:183:6:void systick_init()	0	static
