@@ -209,5 +209,5 @@ flash: $(OBJDIR)/$(TARGET).bin
 	openocd -f interface/cmsis-dap.cfg -f target/stm32f1x.cfg \
 	-c "program $(OBJDIR)/$(TARGET).bin verify reset exit 0x08000000"
 
-.PHONY: all clean flash
+.PHONY: all clean flash debug_artifacts
 	
