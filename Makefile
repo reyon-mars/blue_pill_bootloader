@@ -100,7 +100,7 @@ TEMPDIR		= temp
 # ------------------------------------------------------------------
 # Source files
 # ------------------------------------------------------------------
-CXX_SRCS	= $(SRCDIR)/main.cpp
+CXX_SRCS	= $(wildcard $(SRCDIR)/*.cpp)
 AS_SRCS		= $(SRCDIR)/startup.s
 
 
@@ -129,12 +129,12 @@ TEMP_ASM	= $(CXX_SRCS:$(SRCDIR)/%.cpp=$(TEMPDIR)/%.as)
 # ------------------------------------------------------------------
 all: $(OBJDIR)/$(TARGET).bin
 
+$(OBJDIR):
+	mkdir -p $(OBJDIR)
+
 $(TEMPDIR):
 	mkdir -p $(TEMPDIR)
 
-
-$(OBJDIR):
-	mkdir -p $(OBJDIR)
 
 # ------------------------------------------------------------------
 # Assemble .s files
@@ -142,11 +142,27 @@ $(OBJDIR):
 $(OBJDIR)/%.o: $(SRCDIR)/%.s | $(OBJDIR)
 	$(AS) $(ASFLAGS) -c $< -o $@
 
+
 # ------------------------------------------------------------------
-# Compile .cpp files
+# Compile .cpp files and generate mixed code listings
 # ------------------------------------------------------------------
-$(OBJDIR)/%.o: $(SRCDIR)/%.cpp | $(OBJDIR)
-	$(CXX) $(CXXFLAGS) -c $< -o $@
+$(OBJDIR)/%.o: $(SRCDIR)/%.cpp | $(OBJDIR) $(TEMPDIR)
+	$(CXX) $(CXXFLAGS) -Wa,-adhln=$(TEMPDIR)/$*.lst -c $< -o $@
+
+
+# ------------------------------------------------------------------
+# Generate clean, annotated assembly files
+# ------------------------------------------------------------------
+$(TEMPDIR)/%.as: $(SRCDIR)/%.cpp | $(TEMPDIR)
+	$(CXX) $(CXXFLAGS) -S -fverbose-asm $< -o $@
+
+
+# ------------------------------------------------------------------
+# Relocate stack usage metrics data (.su) once objects are created
+# ------------------------------------------------------------------
+$(TEMPDIR)/%.su: $(OBJDIR)/%.o | $(TEMPDIR)
+	@mv $(SRCDIR)/$*.su $(TEMPDIR)/$*.su 2>/dev/null || mv $*.su $(TEMPDIR)/$*.su 2>/dev/null
+
 
 # ------------------------------------------------------------------
 # Link all objects into ELF
@@ -155,6 +171,7 @@ $(OBJDIR)/$(TARGET).elf: $(ALL_OBJS)
 	$(CXX) $(CXXFLAGS) $(LDFLAGS) $^ -o $@
 	$(SIZE) $@
 	
+
 # ------------------------------------------------------------------
 # Strip ELF to raw binary
 #	-O binary 	: output format is raw binary
@@ -163,17 +180,27 @@ $(OBJDIR)/$(TARGET).elf: $(ALL_OBJS)
 $(OBJDIR)/$(TARGET).bin: $(OBJDIR)/$(TARGET).elf
 	$(OBJCOPY) -O binary -S $< $@
 
+
 # ------------------------------------------------------------------
 # Also produce .HEX for tools that prefer it
 # ------------------------------------------------------------------
 $(OBJDIR)/$(TARGET).hex: $(OBJDIR)/$(TARGET).elf
 	$(OBJCOPY) -O ihex $< $@
 
+
+# ------------------------------------------------------------------
+# Debug Collection
+# ------------------------------------------------------------------
+debug_artifacts: $(TEMP_LST) $(TEMP_ASM) $(TEMP_SU)
+	@echo "All debug files successfully generated in /$(TEMPDIR)"
+
+
 # ------------------------------------------------------------------
 # Clean
 # ------------------------------------------------------------------
 clean:
-	rm -rf $(OBJDIR)
+	rm -rf $(OBJDIR) $(TEMPDIR)
+
 
 # ------------------------------------------------------------------
 # FLASH
