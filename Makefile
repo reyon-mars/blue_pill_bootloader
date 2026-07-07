@@ -88,13 +88,13 @@ LDFLAGS		+= -Wl,--gc-sections
 LDFLAGS		+= -Wl,--print-memory-usage
 LDFLAGS		+= -nostdlib
 LDFLAGS		+= -nostartfiles
-LDFLAGS		+= -Wl,-Map=$(TEMPDIR)/$(TARGET).map
+LDFLAGS		+= -Wl,-Map=$(DEBUGDIR)/$(TARGET).map
 
 
 TARGET 		= blue_pill_bootloader
 SRCDIR		= src
 OBJDIR		= build
-TEMPDIR		= temp
+DEBUGDIR	= $(OBJDIR)/debug
 
 
 # ------------------------------------------------------------------
@@ -116,9 +116,9 @@ ALL_OBJS	= $(AS_OBJS) $(CXX_OBJS)
 # ------------------------------------------------------------------
 # Extra debug artifacts
 # ------------------------------------------------------------------
-TEMP_LST	= $(CXX_SRCS:$(SRCDIR)/%.cpp=$(TEMPDIR)/%.lst)
-TEMP_SU		= $(CXX_SRCS:$(SRCDIR)/%.cpp=$(TEMPDIR)/%.su)
-TEMP_ASM	= $(CXX_SRCS:$(SRCDIR)/%.cpp=$(TEMPDIR)/%.as)
+DEBUG_LST	= $(CXX_SRCS:$(SRCDIR)/%.cpp=$(DEBUGDIR)/%.lst)
+DEBUG_SU	= $(CXX_SRCS:$(SRCDIR)/%.cpp=$(DEBUGDIR)/%.su)
+DEBUG_ASM	= $(CXX_SRCS:$(SRCDIR)/%.cpp=$(DEBUGDIR)/%.as)
 
 
 # ------------------------------------------------------------------
@@ -132,8 +132,8 @@ all: $(OBJDIR)/$(TARGET).bin debug_artifacts
 $(OBJDIR):
 	mkdir -p $(OBJDIR)
 
-$(TEMPDIR):
-	mkdir -p $(TEMPDIR)
+$(DEBUGDIR):
+	mkdir -p $(DEBUGDIR)
 
 
 # ------------------------------------------------------------------
@@ -146,22 +146,22 @@ $(OBJDIR)/%.o: $(SRCDIR)/%.s | $(OBJDIR)
 # ------------------------------------------------------------------
 # Compile .cpp files and generate mixed code listings
 # ------------------------------------------------------------------
-$(OBJDIR)/%.o: $(SRCDIR)/%.cpp | $(OBJDIR) $(TEMPDIR)
-	$(CXX) $(CXXFLAGS) -Wa,-adhln=$(TEMPDIR)/$*.lst -c $< -o $@
+$(OBJDIR)/%.o: $(SRCDIR)/%.cpp | $(OBJDIR) $(DEBUGDIR)
+	$(CXX) $(CXXFLAGS) -Wa,-adhln=$(DEBUGDIR)/$*.lst -c $< -o $@
 
 
 # ------------------------------------------------------------------
 # Generate clean, annotated assembly files
 # ------------------------------------------------------------------
-$(TEMPDIR)/%.as: $(SRCDIR)/%.cpp | $(TEMPDIR)
+$(DEBUGDIR)/%.as: $(SRCDIR)/%.cpp | $(DEBUGDIR)
 	$(CXX) $(CXXFLAGS) -S -fverbose-asm $< -o $@
 
 
 # ------------------------------------------------------------------
 # Relocate stack usage metrics data (.su) once objects are created
 # ------------------------------------------------------------------
-$(TEMPDIR)/%.su: $(OBJDIR)/%.o | $(TEMPDIR)
-	@mv $(SRCDIR)/$*.su $(TEMPDIR)/$*.su 2>/dev/null || mv $*.su $(TEMPDIR)/$*.su 2>/dev/null
+$(DEBUGDIR)/%.su: $(OBJDIR)/%.o | $(DEBUGDIR)
+	@mv $(SRCDIR)/$*.su $(DEBUGDIR)/$*.su 2>/dev/null || mv $*.su $(DEBUGDIR)/$*.su 2>/dev/null
 
 
 # ------------------------------------------------------------------
@@ -191,16 +191,16 @@ $(OBJDIR)/$(TARGET).hex: $(OBJDIR)/$(TARGET).elf
 # ------------------------------------------------------------------
 # Debug Collection
 # ------------------------------------------------------------------
-debug_artifacts: $(TEMP_LST) $(TEMP_ASM) $(TEMP_SU)
-	@echo "All debug files successfully generated in /$(TEMPDIR)"
+debug_artifacts: $(DEBUG_LST) $(DEBUG_ASM) $(DEBUG_SU)
+	@echo "All debug files successfully generated in /$(DEBUGDIR)"
 
 
 # ------------------------------------------------------------------
 # Clean
 # ------------------------------------------------------------------
 clean:
-	rm -rf $(OBJDIR) $(TEMPDIR)
-	mkdir -p $(OBJDIR) $(TEMPDIR)
+	rm -rf $(OBJDIR)
+	mkdir -p $(OBJDIR) $(DEBUGDIR)
 
 
 # ------------------------------------------------------------------
