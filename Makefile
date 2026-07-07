@@ -13,6 +13,7 @@ AS		= $(PREFIX)as
 OBJCOPY	= $(PREFIX)objcopy
 SIZE	= $(PREFIX)size
 
+
 # ------------------------------------------------------------------
 # Target: STM32F103C8T6 is Cortex-M3
 #	-mcpu=cortex-m3		: Generate Cortex-M3 instructions
@@ -20,6 +21,7 @@ SIZE	= $(PREFIX)size
 #	-mfloat-abi=soft	: No hardware FPU on Cortex-M3; use software float
 # ------------------------------------------------------------------
 ARCH_FLAGS = -mcpu=cortex-m3 -mthumb -mfloat-abi=soft
+
 
 # ------------------------------------------------------------------
 # C++ Flags:
@@ -45,6 +47,8 @@ ARCH_FLAGS = -mcpu=cortex-m3 -mthumb -mfloat-abi=soft
 #	-Og					: Optimise for debugging (-O0 produces unreadable assembly;
 #						  -O2/-O3 may inline or reorder things confusingly). For 
 #						  release, we will use -Os (optimise for size).
+#	-fstack-usage		: Outputs a .su file tracking static stack size for every 
+#						  function.
 # ------------------------------------------------------------------
 CXXFLAGS	 = $(ARCH_FLAGS)
 CXXFLAGS	+= -std=c++17
@@ -58,6 +62,8 @@ CXXFLAGS	+= -fdata-sections
 CXXFLAGS	+= -Wall -Wextra
 CXXFLAGS	+= -Og -g
 CXXFLAGS	+= -Iinclude
+CXXFLAGS	+= -fstack-usage
+
 
 # ------------------------------------------------------------------
 # Assembly flags
@@ -75,23 +81,28 @@ ASFLAGS	= $(ARCH_FLAGS)
 #	-nostdlib			: Don't link crtbegin/crtend or libc (no standard startup)
 #	-nostartfiles		: Don't use standard startup files (we provide startup.s)
 #	--print-memory-usage : Print a summary of flash/SRAM usage after linking
+#	-Map				: Generates a complete linker memory map file
 # ------------------------------------------------------------------
 LDFLAGS		 = -T linker.ld
 LDFLAGS		+= -Wl,--gc-sections
 LDFLAGS		+= -Wl,--print-memory-usage
 LDFLAGS		+= -nostdlib
 LDFLAGS		+= -nostartfiles
+LDFLAGS		+= -Wl,-Map=$(TEMPDIR)/$(TARGET).map
 
 
 TARGET 		= blue_pill_bootloader
 SRCDIR		= src
 OBJDIR		= build
+TEMPDIR		= temp
+
 
 # ------------------------------------------------------------------
 # Source files
 # ------------------------------------------------------------------
 CXX_SRCS	= $(SRCDIR)/main.cpp
 AS_SRCS		= $(SRCDIR)/startup.s
+
 
 # ------------------------------------------------------------------
 # Object files
@@ -103,12 +114,24 @@ ALL_OBJS	= $(AS_OBJS) $(CXX_OBJS)
 
 
 # ------------------------------------------------------------------
+# Extra debug artifacts
+# ------------------------------------------------------------------
+TEMP_LST	= $(CXX_SRCS:$(SRCDIR)/%.cpp=$(TEMPDIR)/%.lst)
+TEMP_SU		= $(CXX_SRCS:$(SRCDIR)/%.cpp=$(TEMPDIR)/%.su)
+TEMP_ASM	= $(CXX_SRCS:$(SRCDIR)/%.cpp=$(TEMPDIR)/%.as)
+
+
+# ------------------------------------------------------------------
 # Default target: build the .bin file
 # .elf -> ELF binary (contains debug info, section metadata - for GDB)
 # .bin -> raw binary image (stripped, no metadata - what we write to flash)
 # .hex -> Intel HEX format (alternative flash format for some tools)
 # ------------------------------------------------------------------
 all: $(OBJDIR)/$(TARGET).bin
+
+$(TEMPDIR):
+	mkdir -p $(TEMPDIR)
+
 
 $(OBJDIR):
 	mkdir -p $(OBJDIR)
