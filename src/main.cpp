@@ -1,4 +1,5 @@
 #include "../include/stm32f103.hpp"
+#include "../include/system.hpp"
 
 static void delay( vu32 count )
 {
@@ -9,6 +10,8 @@ static void delay( vu32 count )
 
 int main()
 {
+    clock_init();
+    systick_init();
 
     RCC->APB2ENR |= RCC_APB2ENR_bits::IOPCEN;
     
@@ -23,9 +26,9 @@ int main()
 
     while( true ){
         GPIOC->BSRR = PC13_RESET;
-        delay( 500000);
+        delay_ms( 500 );
         GPIOC->BSRR = PC13_SET;
-        delay( 500000);
+        delay_ms(500 );
     }
     return 0;
 }
