@@ -4,17 +4,35 @@
 //
 // Struct-based peripheral mapping
 //
-
 #pragma  once
 #include <cstdint>
 
 
 // Type aliases
-
 using u8    = uint8_t;
 using u16   = uint16_t;
 using u32   = uint32_t;
-using vu32  = volatile uint32_t; // For hardware registers
+using vu16  = volatile uint16_t;    // For hardware registers
+using vu32  = volatile uint32_t;    // For hardware registers
+
+
+// =================================================================
+// SCB - System Control Block (ARM Cortex-M3 core peripheral)
+// Base address: 0xE000ED00
+// 
+// Not an ST peripheral, it is the part of the ARMv7-M architecture 
+// itself, byte-identical on every Cortex-M3 from any vendor. Governs
+// exception behaviour, reports fault causes, and holds VTOR (Vector
+// Table Offset Register).
+// =================================================================
+struct SCB_t {
+    vu32 CPUID;         // 0x00
+    vu32 ICSR;          // 0x04
+    vu32 VTOR;          // 0x08
+    vu32 AIRCR;         // 0x0C 
+};
+
+
 
 // =================================================================
 // RCC - Reset and Clock Control
