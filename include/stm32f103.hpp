@@ -1,9 +1,13 @@
-// include/stm32f103.h
-//
-// Raw register definitions for STM32F103C8T6.
-//
-// Struct-based peripheral mapping
-//
+/************************************************************
+ * 
+ * stm32f103.h
+ *
+ * Raw register definitions for STM32F103C8T6.
+ *
+ * Struct-based peripheral mapping
+ *
+ ***********************************************************/
+
 #pragma  once
 #include <cstdint>
 
@@ -26,10 +30,22 @@ using vu32  = volatile uint32_t;    // For hardware registers
 // Table Offset Register).
 // =================================================================
 struct SCB_t {
-    vu32 CPUID;         // 0x00
-    vu32 ICSR;          // 0x04
-    vu32 VTOR;          // 0x08
-    vu32 AIRCR;         // 0x0C 
+    vu32 CPUID;     // 0x00 CPU ID
+    vu32 ICSR;      // 0x04 Interrupt Control and State (pending exception info)
+    vu32 VTOR;      // 0x08 Vector Table Offset
+    vu32 AIRCR;     // 0x0C App Interrupt and Reset Control
+    vu32 SCR;       // 0x10 System Control (sleep-on-exit, sleep-deep, wake-on-pending)
+    vu32 CCR;       // 0x14 Configuration and Control (stack alignment, div-by-zero trap)
+    vu32 SHPR1;     // 0x18 System Handler Priority 1 (MemManage, BusFault, UsageFault)
+    vu32 SHPR2;     // 0x1C System Handler Priority 2 (SVCall)
+    vu32 SHPR3;     // 0x20 System Handler Priority 3 (PendSV, SysTick)
+    vu32 SHCSR;     // 0x24 System Handler Control & State (enable/ pending/ active bits)
+    vu32 CFSR;      // 0x28 Configurable Fault Status (MemManage + BusFault + UsageFault causes)
+    vu32 HFSR;      // 0x2C HardFault Status (escalation cause)
+    vu32 DFSR;      // 0x30 Debug Fault Status
+    vu32 MMFAR;     // 0x34 MemManage Fault Address (valid only if MMARVALID set in CFSR)
+    vu32 BFAR;      // 0x38 BusFault Address (valid only if BFARVALID set in CFSR)
+    vu32 AFSR;      // 0x3C Auxiliary Fault Status
 };
 
 
