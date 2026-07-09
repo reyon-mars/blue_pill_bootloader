@@ -48,6 +48,21 @@ struct SCB_t {
     vu32 AFSR;      // 0x3C Auxiliary Fault Status
 };
 
+// Compile-time layout verification.
+// If this fails, the struct fields are wrong ( wrong type, wrong count, padding ).
+static_assert(sizeof(SCB_t) == 64, "SCB_t size mismatch");
+
+// The single SCB peripheral instance. 'static' means this symbol is 
+// not exported to other translation units (avoids link-time collisions 
+// when multiple .cpp files include this header ).
+static SCB_t* const SCB = reinterpret_cast<SCB_t*>(0xE000ED00U);
+
+// SCB_CCR bit definitions
+namespace SCB_CCR_bits{
+    constexpr u32 STKALIGN      =
+    constexpr u32 DIV_0_TRP     =
+    constexpr u32 UNALIGN_TRP   =
+}
 
 
 // =================================================================
@@ -59,7 +74,6 @@ struct SCB_t {
 // in RCC before the first register write to it, or the write is silently 
 // ignored  ( the APB bus returns all-ones on reads, writes have no effect).
 // =================================================================
-
 struct RCC_t {
     vu32 CR;                // 0x00 Clock Control: enable HSI/HSE/PLL, read ready flags
     vu32 CFGR;              // 0x04 Clock Config: select system clock, set PLL, dividers
@@ -73,13 +87,8 @@ struct RCC_t {
     vu32 CSR;               // 0x24 Control/Status (low-power reset flag )
 };
 
-// Compile-time layout verification.
-// If this fails, the struct fields are wrong ( wrong type, wrong count, padding ).
 static_assert(sizeof(RCC_t)== 40, "RCC_t size mismatch - check register definitions");
 
-// The single RCC peripheral instance. 'static' means this symbol is 
-// not exported to other translation units (avoids link-time collisions 
-// when multiple .cpp files include this header ).
 static RCC_t* const RCC = reinterpret_cast<RCC_t*>(0x40021000U);
 
 // RCC_CR bit definitions
@@ -120,7 +129,6 @@ namespace RCC_CFGR_bits {
     // 1 = PLL not divided ( USB clock = PLL = 48MHz when PLL = 48MHz )
     constexpr u32 USBPRE_DIV1 = ( 1U << 22 );    
 }
-
 
 // RCC_APB2ENR bit definitions
 namespace RCC_APB2ENR_bits {
