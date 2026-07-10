@@ -66,6 +66,7 @@ namespace SCB_CCR_bits{
 
 // SCB_CFSR bit definitions
 namespace SCB_CFSR_bits{
+    // Byte 0 = MemManage status, Byte 1 = BusFault status, Byte 2:3 = UsageFault status
     constexpr u32 IACCVIOL      = ( 1U << 0 );      //
     constexpr u32 DACCVIOL      = ( 1U << 1 );      //
     constexpr u32 MMARVALID     = ( 1U << 7 );      //
