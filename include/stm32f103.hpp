@@ -59,9 +59,24 @@ static SCB_t* const SCB = reinterpret_cast<SCB_t*>(0xE000ED00U);
 
 // SCB_CCR bit definitions
 namespace SCB_CCR_bits{
-    constexpr u32 STKALIGN      = (1U << 9);    // Force 8-byte stack alignment on exception entry
-    constexpr u32 DIV_0_TRP     = (1U << 4);    // 1 = integer divide-by-zero raises UsageFault
-    constexpr u32 UNALIGN_TRP   = (1U << 3);    // 1 = unaligned access raises UsageFault
+    constexpr u32 STKALIGN      = ( 1U << 9 );    // Force 8-byte stack alignment on exception entry
+    constexpr u32 DIV_0_TRP     = ( 1U << 4 );    // 1 = integer divide-by-zero raises UsageFault
+    constexpr u32 UNALIGN_TRP   = ( 1U << 3 );    // 1 = unaligned access raises UsageFault
+}
+
+// SCB_CFSR bit definitions
+namespace SCB_CFSR_bits{
+    constexpr u32 IACCVIOL      = ( 1U << 0 );      //
+    constexpr u32 DACCVIOL      = ( 1U << 1 );      //
+    constexpr u32 MMARVALID     = ( 1U << 7 );      //
+    constexpr u32 IBUSERR       = ( 1U << 8 );      //
+    constexpr u32 PRECISERR     = ( 1U << 9 );      //
+    constexpr u32 IMPRECISEERR  = ( 1U << 10 );     //
+    constexpr u32 BFARVALID     = ( 1U << 15 );     //
+    constexpr u32 UNDEFINSTR    = ( 1U << 16 );     //
+    constexpr u32 INVSTATE      = ( 1U << 17 );     //
+    constexpr u32 UNALIGNED     = ( 1U << 24 );     //
+    constexpr u32 DIVBYZERO     = ( 1U << 25 );     //
 }
 
 
