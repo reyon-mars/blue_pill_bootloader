@@ -9,6 +9,7 @@
  ***********************************************************/
 
 #pragma  once
+#include <array>
 #include <cstdint>
 
 
@@ -85,6 +86,34 @@ namespace SCB_AIRCR_bits{
     constexpr u32 VECTKEY       = ( 0x05FAU << 16 );    // Required Key: any write without this is ignored
     constexpr u32 SYSRESETREQ   = ( 1U << 2 );          // Request a full system reset
 }
+
+
+// =================================================================
+// NVIC - Nested Vectored Interrupt Controller (ARM Cortex-M3 core peripheral)
+// Base address: 0xE000E100
+// 
+// Enables/Disables, tracks pending state, and prioritizes every peripheral
+// IRQ. STM32 implements only the top 4 bits of each 8-bit priority field,
+// giving 16 priority levels (0 = highest, 15 = lowest), each stored
+// left-justified: 
+//                  register value = level << 4. 
+// STM32 has 43 IRQs (0-42) - only ISER[0] (IRQ0-31) and the bottom 11
+// bits of ISER[1] (IRQ32-42) are ever meaningful, but the array is 
+// sized per the full ARMv7 spec (up to 240 IRQs).
+// =================================================================
+struct NVIC_t {
+    std::array<vu32,  8>  ISER;
+    std::array<u32,  24>  RESERVED0;
+    std::array<vu32,  8>  ICER;
+    std::array<u32,  24>  RESERVED1;
+    std::array<vu32,  8>  ISPR;
+    std::array<u32,  24>  RESERVED2;
+    std::array<vu32,  8>  ICPR;
+    std::array<u32,  24>  RESERVED3;
+    std::array<vu32,  8>  IABR;
+    std::array<u32,  56>  RESERVED4;
+    std::array<vu32, 60>  IPR;
+};
 
 
 // =================================================================
