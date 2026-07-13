@@ -67,17 +67,23 @@ namespace SCB_CCR_bits{
 // SCB_CFSR bit definitions
 namespace SCB_CFSR_bits{
     // Byte 0 = MemManage status, Byte 1 = BusFault status, Byte 2:3 = UsageFault status
-    constexpr u32 IACCVIOL      = ( 1U << 0 );      //
-    constexpr u32 DACCVIOL      = ( 1U << 1 );      //
-    constexpr u32 MMARVALID     = ( 1U << 7 );      //
-    constexpr u32 IBUSERR       = ( 1U << 8 );      //
-    constexpr u32 PRECISERR     = ( 1U << 9 );      //
-    constexpr u32 IMPRECISEERR  = ( 1U << 10 );     //
-    constexpr u32 BFARVALID     = ( 1U << 15 );     //
-    constexpr u32 UNDEFINSTR    = ( 1U << 16 );     //
-    constexpr u32 INVSTATE      = ( 1U << 17 );     //
-    constexpr u32 UNALIGNED     = ( 1U << 24 );     //
-    constexpr u32 DIVBYZERO     = ( 1U << 25 );     //
+    constexpr u32 IACCVIOL      = ( 1U << 0 );      // MemManage:   instruction access violation
+    constexpr u32 DACCVIOL      = ( 1U << 1 );      // MemManage:   data access violation
+    constexpr u32 MMARVALID     = ( 1U << 7 );      // MemManage:   MMFAR holds a valid faulting address
+    constexpr u32 IBUSERR       = ( 1U << 8 );      // BusFault:    instruction bus error
+    constexpr u32 PRECISERR     = ( 1U << 9 );      // BusFault:    precise data bus error (BFAR valid)
+    constexpr u32 IMPRECISEERR  = ( 1U << 10 );     // BusFault:    imprecise data bus error (BFAR NOT valid)
+    constexpr u32 BFARVALID     = ( 1U << 15 );     // BusFault:    BFAR holds a valid faulting address
+    constexpr u32 UNDEFINSTR    = ( 1U << 16 );     // UsageFault:  undefined instruction executed
+    constexpr u32 INVSTATE      = ( 1U << 17 );     // UsageFault:  invalid EPSR
+    constexpr u32 UNALIGNED     = ( 1U << 24 );     // UsageFault:  unaligned access
+    constexpr u32 DIVBYZERO     = ( 1U << 25 );     // UsageFault:  integer divide by zero (needs DIV_0_TRP set)
+}
+
+// SCB_AIRCR bit definitions
+namespace SCB_AIRCR_bits{
+    constexpr u32 VECTKEY       = ( 0x05FAU << 16 );    // Required Key: any write without this is ignored
+    constexpr u32 SYSRESETREQ   = ( 1U << 2 );          // Request a full system reset
 }
 
 
