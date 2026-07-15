@@ -115,6 +115,11 @@ struct NVIC_t {
     std::array<vu32, 60>  IPR;
 };
 
+static_assert(sizeof(NVIC_t) == 1008, "NVIC_t size mismatch");
+
+static NVIC_t* const NVIC = reinterpret_cast<NVIC_t*>(0xE000E100U);
+
+
 
 // =================================================================
 // RCC - Reset and Clock Control

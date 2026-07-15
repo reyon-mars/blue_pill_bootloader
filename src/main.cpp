@@ -1,7 +1,7 @@
 #include "../include/stm32f103.hpp"
 #include "../include/system.hpp"
 
-static void delay( vu32 count )
+[[maybe_unused]]static void delay( vu32 count )
 {
     while( count-- ){
         // Empty. The compiler might optimize this away, so make count a volatile.       
