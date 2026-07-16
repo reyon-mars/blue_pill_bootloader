@@ -17,6 +17,7 @@
 using u8    = uint8_t;
 using u16   = uint16_t;
 using u32   = uint32_t;
+using vu8   = volatile uint8_t;     // For hardware registers
 using vu16  = volatile uint16_t;    // For hardware registers
 using vu32  = volatile uint32_t;    // For hardware registers
 
@@ -112,12 +113,33 @@ struct NVIC_t {
     std::array<u32,  24>  RESERVED3;
     std::array<vu32,  8>  IABR;
     std::array<u32,  56>  RESERVED4;
-    std::array<vu32, 60>  IPR;
+    std::array<vu8, 240>  IPR;
 };
 
 static_assert(sizeof(NVIC_t) == 1008, "NVIC_t size mismatch");
 
 static NVIC_t* const NVIC = reinterpret_cast<NVIC_t*>(0xE000E100U);
+
+// NVIC helper functions
+namespace NVIC_helpers {
+    // Only the four bits of each byte is used for priority levels
+    constexpr u32 PRIO_BITS = 4;
+
+    // Set IRQ 'irq' (0...42) to priority level 'level' (0 = highest... 15= lowest).
+    inline void set_priority( int irq, u32 level ){
+        NVIC->IPR[irq] = static_cast<u8>((level & 0x0FU ) << 4 );
+    }
+
+    // Enable the given irq 'irq'
+    inline void enable_irq( int irq ) {
+        NVIC->ISER[irq/32] = (1U << ( irq % 32 ));
+    }
+
+    // Disable the given irq 'irq'
+    inline void disable_irq( int irq ) {
+        NVIC->ICER[irq/32] = (1U << ( irq % 32 ));
+    }
+}
 
 
 
