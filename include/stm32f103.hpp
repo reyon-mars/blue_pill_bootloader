@@ -122,20 +122,20 @@ static NVIC_t* const NVIC = reinterpret_cast<NVIC_t*>(0xE000E100U);
 
 // NVIC helper functions
 namespace NVIC_helpers {
-    // Only the four bits of each byte is used for priority levels
+    // Only the UPPER 4 bits (MSBs) of each priority byte are used for priority levels
     constexpr u32 PRIO_BITS = 4;
-
+    
     // Set IRQ 'irq' (0...42) to priority level 'level' (0 = highest... 15= lowest).
     inline void set_priority( int irq, u32 level ){
         NVIC->IPR[irq] = static_cast<u8>((level & 0x0FU ) << 4 );
     }
 
-    // Enable the given irq 'irq'
+    // Enable a specific IRQ 'irq' in the NVIC
     inline void enable_irq( int irq ) {
         NVIC->ISER[irq/32] = (1U << ( irq % 32 ));
     }
 
-    // Disable the given irq 'irq'
+    // Disable a specific IRQ 'irq' in the NVIC
     inline void disable_irq( int irq ) {
         NVIC->ICER[irq/32] = (1U << ( irq % 32 ));
     }
