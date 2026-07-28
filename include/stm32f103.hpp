@@ -358,4 +358,46 @@ namespace SysTick_bits {
                                                     // Cleared automatically on CSR read 
 }
 
+
+// =================================================================
+// USB - Full-Speed Device Controller (device-only, no OTG/host capability)
+// Control/Status registers: 0x40005C00
+// Packet Memory Area (PMA): 0x40006000
+//
+// The PMA is a dedicated 512-byte SRAM, separate from the 20KB main SRAM at
+// 0x20000000, so the CPU's main memory bus cannot reach it except through
+// the APB1 bus.
+//
+// Every register below, AND every word of PMA, is only 16 BITS WIDE IN SILICON,
+// but each one occupies a full 32-bit address slot. This is because the PMA is
+// a dual-port SRAM built for 16-bit peripheral access, wired onto a bus that 
+// only decodes 32-bit-aligned addresses-so the upper half of every 32-bit
+// slot doesn't connect to anything. 
+// CONSEQUENCE: We must access every USB register and every PMA word through
+// a 'vu16*', never through a 'vu32'.
+// =================================================================
+struct USB_t{
+    vu16 EP0R;    vu16 _r0;
+    vu16 EP1R;    vu16 _r1;
+    vu16 EP2R;    vu16 _r2;
+    vu16 EP3R;    vu16 _r3;
+    vu16 EP4R;    vu16 _r4;
+    vu16 EP5R;    vu16 _r5;
+    vu16 EP6R;    vu16 _r6;
+    vu16 EP7R;    vu16 _r7; 
+    std::array<vu16, 16> RESERVED;
+    vu16 CNTR;    vu16 _r_cntr;
+    vu16 ISTR;    vu16 _r_istr;
+    vu16 FNR;     vu16 _r_fnr;
+    vu16 DADDR;   vu16 _r_daddr;
+    vu16 BTABLE;  vu16 _r_btable;
+};
+
+static_assert(sizeof(USB_t) == 84, "USB_t size mismatch");
+
+static USB_t* const USB = reinterpret_cast<USB_t*>(0x40005C00U);
+
+static vu16* const USB_PMA = reinterpret_cast<vu16*>(0x40006000U);
+
+
 /* This is the END ('_') */
