@@ -397,7 +397,8 @@ static_assert(sizeof(USB_t) == 84, "USB_t size mismatch");
 
 static USB_t* const USB = reinterpret_cast<USB_t*>(0x40005C00U);
 
-static vu16* const USB_PMA = reinterpret_cast<vu16*>(0x40006000U);
+using PMA_t = std::array<vu16, 256>;
+static PMA_t& USB_PMA = *reinterpret_cast<PMA_t*>(0x40006000U);
 
 
 /* This is the END ('_') */
