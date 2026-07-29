@@ -364,22 +364,22 @@ namespace SysTick_bits {
 // Control/Status registers: 0x40005C00
 // Packet Memory Area (PMA): 0x40006000
 //
-// The PMA is a dedicated 512-byte SRAM inside the USB peripheral,separate 
+// The PMA is a dedicated 512-byte SRAM inside the USB peripheral, separate 
 // from the 20KB main SRAM at 0x20000000, so the CPU's main memory 
-// bus cannot reach it except through USB peripherals's APB1 interface.
+// bus cannot reach it except through USB peripheral's APB1 interface.
 //
 // Every register below, AND every word of PMA, is only 16 BITS WIDE IN SILICON,
 // but each one occupies a full 32-bit address slot. This is because the PMA is
 // a dual-port SRAM built for 16-bit peripheral access, wired onto a bus that 
-// only decodes 32-bit-aligned addresses-so the upper half of every 32-bit
+// only decodes 32-bit-aligned addresses - so the upper half of every 32-bit
 // slot doesn't connect to anything. 
 // CONSEQUENCE: We must access every USB register and every PMA word through
 // a 'vu16*', never through a 'vu32'.
 // =================================================================
 struct USB_t{
     /**********************************************
-     * 
-     *********************************************/
+     * USB_EPnR                                   *
+     **********************************************/
     vu16 EP0R;    vu16 _r0;         // 0x00
     vu16 EP1R;    vu16 _r1;         // 0x04
     vu16 EP2R;    vu16 _r2;         // 0x08
@@ -402,12 +402,23 @@ static_assert(sizeof(USB_t) == 84, "USB_t size mismatch");
 
 static USB_t* const USB = reinterpret_cast<USB_t*>(0x40005C00U);
 
-struct PMAWord{
+
+// =================================================================
+// PMA_Word_t
+// This struct models one 32-bit address SLOT of the Packet Memory
+// Area - 16 real bits ('data') plus the 16 bits of nothing above them.
+// =================================================================
+struct PMA_Word_t {
     vu16 data;
-    vu16 reserved;
+    vu16 _reserved;
 };
-using PMA_t = std::array<PMAWord, 256>;
+
+using PMA_t = std::array<PMA_Word_t, 256>;
+
+static_assert(sizeof(PMA_t) == 1024, "PMA_t size mismatch");
+
 static PMA_t& USB_PMA = *reinterpret_cast<PMA_t*>(0x40006000U);
+
 
 namespace USB_CNTR_bits{
 
