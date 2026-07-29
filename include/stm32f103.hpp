@@ -364,9 +364,9 @@ namespace SysTick_bits {
 // Control/Status registers: 0x40005C00
 // Packet Memory Area (PMA): 0x40006000
 //
-// The PMA is a dedicated 512-byte SRAM, separate from the 20KB main SRAM at
-// 0x20000000, so the CPU's main memory bus cannot reach it except through
-// the APB1 bus.
+// The PMA is a dedicated 512-byte SRAM inside the USB peripheral,separate 
+// from the 20KB main SRAM at 0x20000000, so the CPU's main memory 
+// bus cannot reach it except through USB peripherals's APB1 interface.
 //
 // Every register below, AND every word of PMA, is only 16 BITS WIDE IN SILICON,
 // but each one occupies a full 32-bit address slot. This is because the PMA is
@@ -377,28 +377,41 @@ namespace SysTick_bits {
 // a 'vu16*', never through a 'vu32'.
 // =================================================================
 struct USB_t{
-    vu16 EP0R;    vu16 _r0;
-    vu16 EP1R;    vu16 _r1;
-    vu16 EP2R;    vu16 _r2;
-    vu16 EP3R;    vu16 _r3;
-    vu16 EP4R;    vu16 _r4;
-    vu16 EP5R;    vu16 _r5;
-    vu16 EP6R;    vu16 _r6;
-    vu16 EP7R;    vu16 _r7; 
-    std::array<vu16, 16> RESERVED;
-    vu16 CNTR;    vu16 _r_cntr;
-    vu16 ISTR;    vu16 _r_istr;
-    vu16 FNR;     vu16 _r_fnr;
-    vu16 DADDR;   vu16 _r_daddr;
-    vu16 BTABLE;  vu16 _r_btable;
+    /**********************************************
+     * 
+     *********************************************/
+    vu16 EP0R;    vu16 _r0;         // 0x00
+    vu16 EP1R;    vu16 _r1;         // 0x04
+    vu16 EP2R;    vu16 _r2;         // 0x08
+    vu16 EP3R;    vu16 _r3;         // 0x0C
+    vu16 EP4R;    vu16 _r4;         // 0x10
+    vu16 EP5R;    vu16 _r5;         // 0x14
+    vu16 EP6R;    vu16 _r6;         // 0x18
+    vu16 EP7R;    vu16 _r7;         // 0x1C
+    std::array<vu16, 16> RESERVED;  // 0x20-0x3F
+    /**********************************************/
+    vu16 CNTR;    vu16 _r_cntr;     // 0x40 Control: reset, power-down, suspend/resume, per-event IRQ enables
+    vu16 ISTR;    vu16 _r_istr;     // 0x44 Interrupt Status: which event fired + which endpoint (EP_ID, DIR)
+    vu16 FNR;     vu16 _r_fnr;      // 0x48 Frame Number: current USB frame count + error flags from the last SOF
+    vu16 DADDR;   vu16 _r_daddr;    // 0x4C Device Address: assigned by the host during enumeration + enable bit
+    vu16 BTABLE;  vu16 _r_btable;   // 0x50 Buffer Table Address: PMA offset where the 8 endpoints' buffer descriptors
+                                    // (addr/count pairs) begin.
 };
 
 static_assert(sizeof(USB_t) == 84, "USB_t size mismatch");
 
 static USB_t* const USB = reinterpret_cast<USB_t*>(0x40005C00U);
 
-using PMA_t = std::array<vu16, 256>;
+struct PMAWord{
+    vu16 data;
+    vu16 reserved;
+};
+using PMA_t = std::array<PMAWord, 256>;
 static PMA_t& USB_PMA = *reinterpret_cast<PMA_t*>(0x40006000U);
+
+namespace USB_CNTR_bits{
+
+}
 
 
 /* This is the END ('_') */
