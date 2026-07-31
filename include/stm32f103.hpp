@@ -26,7 +26,7 @@ using vu32  = volatile uint32_t;    // For hardware registers
 // SCB - System Control Block (ARM Cortex-M3 core peripheral)
 // Base address: 0xE000ED00
 // 
-// Not an ST peripheral, it is the part of the ARMv7-M architecture 
+// This is NOT an ST peripheral, it is the part of the ARMv7-M architecture 
 // itself, byte-identical on every Cortex-M3 from any vendor. Governs
 // exception behaviour, reports fault causes, and holds VTOR (Vector
 // Table Offset Register).
@@ -103,31 +103,33 @@ namespace SCB_AIRCR_bits{
 // sized per the full ARMv7 spec (up to 240 IRQs).
 // =================================================================
 struct NVIC_t {
-    std::array<vu32,  8>  ISER;
+    std::array<vu32,  8>  ISER;         // 0x000 Set-Enable
     std::array<u32,  24>  RESERVED0;
-    std::array<vu32,  8>  ICER;
+    std::array<vu32,  8>  ICER;         // 0x080 Clear-Enable
     std::array<u32,  24>  RESERVED1;
-    std::array<vu32,  8>  ISPR;
+    std::array<vu32,  8>  ISPR;         // 0x100 Set-Pending
     std::array<u32,  24>  RESERVED2;
-    std::array<vu32,  8>  ICPR;
+    std::array<vu32,  8>  ICPR;         // 0x180 Clear-Pending
     std::array<u32,  24>  RESERVED3;
-    std::array<vu32,  8>  IABR;
+    std::array<vu32,  8>  IABR;         // 0x200 Active Bit (READ-ONLY)
     std::array<u32,  56>  RESERVED4;
-    std::array<vu8, 240>  IPR;
+    std::array<vu8, 240>  IPR;          // 0x300 Priority (ONE BYTE PER IRQ)
+    std::array<u32, 644>  RESERVED5;    // 0x3F0 - 0xDFF
+    vu32                  STIR;         // 0xE00 Software Trigger Interrupt Register (WRITE-ONLY)
 };
 
-static_assert(sizeof(NVIC_t) == 1008, "NVIC_t size mismatch");
+static_assert(sizeof(NVIC_t) == 3588, "NVIC_t size mismatch");
 
 static NVIC_t* const NVIC = reinterpret_cast<NVIC_t*>(0xE000E100U);
 
 // NVIC helper functions
 namespace NVIC_helpers {
     // Only the UPPER 4 bits (MSBs) of each priority byte are used for priority levels
-    constexpr u32 PRIO_BITS = 4;
+    constexpr u8 PRIO_BITS = 4;
     
     // Set IRQ 'irq' (0...42) to priority level 'level' (0 = highest... 15= lowest).
     inline void set_priority( int irq, u32 level ){
-        NVIC->IPR[irq] = static_cast<u8>((level & 0x0FU ) << 4 );
+        NVIC->IPR[irq] = static_cast<u8>(level << (8U - PRIO_BITS));
     }
 
     // Enable a specific IRQ 'irq' in the NVIC
@@ -413,6 +415,8 @@ struct PMA_Word_t {
     vu16 _reserved;
 };
 
+static_assert(sizeof(PMA_Word_t) == 4, "PMA_Word_t size mismatch");
+
 using PMA_t = std::array<PMA_Word_t, 256>;
 
 static_assert(sizeof(PMA_t) == 1024, "PMA_t size mismatch");
@@ -420,8 +424,13 @@ static_assert(sizeof(PMA_t) == 1024, "PMA_t size mismatch");
 static PMA_t& USB_PMA = *reinterpret_cast<PMA_t*>(0x40006000U);
 
 
-namespace USB_CNTR_bits{
-
+namespace USB_CNTR_bits {
+    constexpr u32 FRES      = ( 1U << 0 );      // Force USB RESET
+    constexpr u32 PDWN      = ( 1U << 1 );      // Power Down
+    constexpr u32 FSUSP     = ( 1U << 3 );      // 
+    constexpr u32 RESUME    = ( 1U << 4 );
+    constexpr u32 ESOFM     = ( 1U << 8 );
+    
 }
 
 
