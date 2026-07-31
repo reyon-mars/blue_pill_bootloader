@@ -126,6 +126,7 @@ static NVIC_t* const NVIC = reinterpret_cast<NVIC_t*>(0xE000E100U);
 namespace NVIC_helpers {
     // Only the UPPER 4 bits (MSBs) of each priority byte are used for priority levels
     constexpr u8 PRIO_BITS = 4;
+    constexpr u8 NUM_IMPLEMENTED_IRQ = 43;
     
     // Set IRQ 'irq' (0...42) to priority level 'level' (0 = highest... 15= lowest).
     inline void set_priority( int irq, u32 level ){
@@ -175,8 +176,11 @@ static RCC_t* const RCC = reinterpret_cast<RCC_t*>(0x40021000U);
 namespace RCC_CR_bits {
     constexpr u32 HSION     = ( 1U << 0 );      // Enable internal 8MHz HSI oscillator
     constexpr u32 HSIRDY    = ( 1U << 1 );      // HSI ready flag ( hardware sets this; READ ONLY )
+    constexpr u32 HSITRIM   = ( 0x1FU << 3 );   // Manual HSI frequency trim
     constexpr u32 HSEON     = ( 1U << 16 );     // Enable external crystal (HSE)
     constexpr u32 HSERDY    = ( 1U << 17 );     // HSE ready flag ( READ ONLY )
+    constexpr u32 HSEBYP    = ( 1U << 18 );     // Bypass HSE oscillator with an external digital clock
+    constexpr u32 CSSON     = ( 1U << 19 );     // Clock Security System: Detect HSE failure, auto-fallback to HSI
     constexpr u32 PLLON     = ( 1U << 24 );     // Enable PLL
     constexpr u32 PLLRDY    = ( 1U << 25 );     // PLL locked flag ( READ ONLY )
 }
