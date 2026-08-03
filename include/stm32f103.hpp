@@ -182,7 +182,7 @@ namespace RCC_CR_bits {
     constexpr u32 HSEBYP    = ( 1U << 18 );     // Bypass HSE oscillator with an external digital clock
     constexpr u32 CSSON     = ( 1U << 19 );     // Clock Security System: Detect HSE failure, auto-fallback to HSI
     constexpr u32 PLLON     = ( 1U << 24 );     // Enable PLL
-    constexpr u32 PLLRDY    = ( 1U << 25 );     // PLL locked flag ( READ ONLY )
+    constexpr u32 PLLRDY    = ( 1U << 25 );     // PLL locked flag (READ ONLY)
 }
 
 // RCC_CFGR bit definitions
@@ -408,6 +408,13 @@ static_assert(sizeof(USB_t) == 84, "USB_t size mismatch");
 
 static USB_t* const USB = reinterpret_cast<USB_t*>(0x40005C00U);
 
+namespace USB_CNTR_bits {
+    constexpr u32 FRES      = ( 1U << 0 );      // Force USB RESET
+    constexpr u32 PDWN      = ( 1U << 1 );      // Power Down
+    constexpr u32 FSUSP     = ( 1U << 3 );      // 
+    constexpr u32 RESUME    = ( 1U << 4 );
+    constexpr u32 ESOFM     = ( 1U << 8 );   
+}
 
 // =================================================================
 // PMA_Word_t
@@ -427,15 +434,9 @@ static_assert(sizeof(PMA_t) == 1024, "PMA_t size mismatch");
 
 static PMA_t& USB_PMA = *reinterpret_cast<PMA_t*>(0x40006000U);
 
-
-namespace USB_CNTR_bits {
-    constexpr u32 FRES      = ( 1U << 0 );      // Force USB RESET
-    constexpr u32 PDWN      = ( 1U << 1 );      // Power Down
-    constexpr u32 FSUSP     = ( 1U << 3 );      // 
-    constexpr u32 RESUME    = ( 1U << 4 );
-    constexpr u32 ESOFM     = ( 1U << 8 );
-    
-}
+// =================================================================
+//
+// =================================================================
 
 
 /* This is the END ('_') */
