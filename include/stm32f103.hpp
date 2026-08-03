@@ -416,14 +416,22 @@ namespace USB_CNTR_bits {
     constexpr u32 ESOFM     = ( 1U << 8 );   
 }
 
+
 // =================================================================
 // PMA_Word_t
-// This struct models one 32-bit address SLOT of the Packet Memory
-// Area - 16 real bits ('data') plus the 16 bits of nothing above them.
+// 
+// Models one CPU-visible address SLOT of the Packet Memory Area.
+// Although the PMA physically consists of 256 x 16-bit words (512 bytes),
+// the CPU does not see them packed back-to-back. Instead, each 16-bit
+// PMA word is mapped into its own 32-bit address slot, with the 
+// lower half-word containing the actual PMA data and the upper half-word
+// not implemented in hardware. Consequently, successive PMA words
+// are spaced 4 bytes apart in the CPU address space.
 // =================================================================
 struct PMA_Word_t {
     vu16 data;
-    vu16 _reserved;
+    private:
+    u16 _padding;
 };
 
 static_assert(sizeof(PMA_Word_t) == 4, "PMA_Word_t size mismatch");
@@ -435,8 +443,18 @@ static_assert(sizeof(PMA_t) == 1024, "PMA_t size mismatch");
 static PMA_t& USB_PMA = *reinterpret_cast<PMA_t*>(0x40006000U);
 
 // =================================================================
-//
+// BTABLE_entry_t
+// This struct represents the entry describing the buffer for a single 
+// endpoint inside the Buffer Descriptor Table
 // =================================================================
+struct BTABLE_entry_t {
+    PMA_Word_t ADDR_TX;
+    PMA_Word_t COUNT_TX;
+    PMA_Word_t ADDR_RX;
+    PMA_Word_t COUNT_RX;
+};
+
+static_assert( sizeof(BTABLE_entry_t) == 16, "BTABLE_entry_t size mismatch");
 
 
 /* This is the END ('_') */
