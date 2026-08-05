@@ -408,19 +408,47 @@ static_assert(sizeof(USB_t) == 84, "USB_t size mismatch");
 
 static USB_t* const USB = reinterpret_cast<USB_t*>(0x40005C00U);
 
+namespace USB_EPnR_bits {
+    constexpr u32 EA_MASK           = ( 0xFU << 0 );
+    constexpr u32 STAT_TX_MASK      = ( 0x3U << 4 );
+    constexpr u32 DTOG_TX           = ( 0x1U << 6 );
+    constexpr u32 CTR_TX            = ( 0x1U << 7 );
+    constexpr u32 EP_KIND           = ( 0x1U << 8 );
+    constexpr u32 EP_TYPE_BULK      = ( 0x0U << 9 );
+    constexpr u32 EP_TYPE_CONTROL   = ( 0x1U << 9 );
+    constexpr u32 EP_TYPE_ISO       = ( 0x2U << 9 );
+    constexpr u32 EP_TYPE_INTERRUPT = ( 0x3U << 9 );
+    constexpr u32 SETUP             = ( 0x1U << 11 );
+    constexpr u32 STAT_RX_MASK      = ( 0x3U << 12 );
+    constexpr u32 DTOG_RX           = ( 0x1U << 14 );
+    constexpr u32 CTR_RX            = ( 0x1U << 15 );
+    constexpr u32 TOGGLE_BITS       = ( DTOG_TX | DTOG_RX | STAT_TX_MASK | STAT_RX_MASK );
+}
+
 namespace USB_CNTR_bits {
     constexpr u32 FRES      = ( 1U << 0 );      // Force USB RESET
     constexpr u32 PDWN      = ( 1U << 1 );      // Power Down
     constexpr u32 FSUSP     = ( 1U << 3 );      // 
     constexpr u32 RESUME    = ( 1U << 4 );
-    constexpr u32 ESOFM     = ( 1U << 8 );   
+    constexpr u32 ESOFM     = ( 1U << 8 );
+    constexpr u32 SOFM      = ( 1U << 9 );
+    constexpr u32 RESETM    = ( 1U << 10 );
+    constexpr u32 SUSPM     = ( 1U << 11 );
+    constexpr u32 WKUPM     = ( 1U << 12 );
+    constexpr u32 ERRM      = ( 1U << 13 );
+    constexpr u32 PMAOVRM   = ( 1U << 14 );
+    constexpr u32 CTRM      = ( 1U << 15 );
+}
+
+namespace USB_ISTR_bits {
+
 }
 
 
 // =================================================================
 // PMA_Word_t
 // 
-// Models one CPU-visible address SLOT of the Packet Memory Area.
+// Models one CPU-visible address slot of the Packet Memory Area.
 // Although the PMA physically consists of 256 x 16-bit words (512 bytes),
 // the CPU does not see them packed back-to-back. Instead, each 16-bit
 // PMA word is mapped into its own 32-bit address slot, with the 
