@@ -1,6 +1,6 @@
 /************************************************************
  * 
- * stm32f103.h
+ * stm32f103.hpp
  *
  * Raw register definitions for STM32F103C8T6.
  *
@@ -13,16 +13,21 @@
 #include <cstdint>
 
 
-// Type aliases
+/*-----------------------------------------------------------*
+ *  Type aliases                                              *
+ *-----------------------------------------------------------*/
 using u8    = uint8_t;
 using u16   = uint16_t;
 using u32   = uint32_t;
-using vu8   = volatile uint8_t;     // For hardware registers
-using vu16  = volatile uint16_t;    // For hardware registers
-using vu32  = volatile uint32_t;    // For hardware registers
+/*-----------------------------------------------------------*
+ *  Aliases For Hardware Registers                           *
+ *-----------------------------------------------------------*/
+using vu8   = volatile uint8_t;     
+using vu16  = volatile uint16_t;    
+using vu32  = volatile uint32_t;
 
 
-// =================================================================
+// ============================================================================
 // SCB - System Control Block (ARM Cortex-M3 core peripheral)
 // Base address: 0xE000ED00
 // 
@@ -30,7 +35,7 @@ using vu32  = volatile uint32_t;    // For hardware registers
 // itself, byte-identical on every Cortex-M3 from any vendor. Governs
 // exception behaviour, reports fault causes, and holds VTOR (Vector
 // Table Offset Register).
-// =================================================================
+// ============================================================================
 struct SCB_t {
     vu32 CPUID;     // 0x00 CPU ID
     vu32 ICSR;      // 0x04 Interrupt Control and State (pending exception info)
@@ -89,7 +94,7 @@ namespace SCB_AIRCR_bits{
 }
 
 
-// =================================================================
+// ============================================================================
 // NVIC - Nested Vectored Interrupt Controller (ARM Cortex-M3 core peripheral)
 // Base address: 0xE000E100
 // 
@@ -101,7 +106,7 @@ namespace SCB_AIRCR_bits{
 // STM32 has 43 IRQs (0-42) - only ISER[0] (IRQ0-31) and the bottom 11
 // bits of ISER[1] (IRQ32-42) are ever meaningful, but the array is 
 // sized per the full ARMv7 spec (up to 240 IRQs).
-// =================================================================
+// ============================================================================
 struct NVIC_t {
     std::array<vu32,  8>  ISER;         // 0x000 Set-Enable
     std::array<u32,  24>  RESERVED0;
@@ -146,15 +151,15 @@ namespace NVIC_helpers {
 
 
 
-// =================================================================
+// ============================================================================
 // RCC - Reset and Clock Control
 // Base address: 0x40021000
 //
 // Every peripheral on the STM32 is gated behind a clock. The peripheral
 // is POWERED OFF by default. The clock for the peripheral must be enabled
 // in RCC before the first register write to it, or the write is silently 
-// ignored  ( the APB bus returns all-ones on reads, writes have no effect).
-// =================================================================
+// ignored  (the APB bus returns all-ones on reads, writes have no effect).
+// ============================================================================
 struct RCC_t {
     vu32 CR;                // 0x00 Clock Control: enable HSI/HSE/PLL, read ready flags
     vu32 CFGR;              // 0x04 Clock Config: select system clock, set PLL, dividers
@@ -168,7 +173,7 @@ struct RCC_t {
     vu32 CSR;               // 0x24 Control/Status (low-power reset flag )
 };
 
-static_assert(sizeof(RCC_t)== 40, "RCC_t size mismatch - check register definitions");
+static_assert(sizeof(RCC_t) == 40, "RCC_t size mismatch - check register definitions");
 
 static RCC_t* const RCC = reinterpret_cast<RCC_t*>(0x40021000U);
 
@@ -232,7 +237,7 @@ namespace RCC_APB1ENR_bits {
 }
 
 
-// =================================================================
+// ============================================================================
 // GPIO - General Purpose Input/Output
 // GPIOA Base: 0x40010800
 // GPIOC Base: 0x40011000
@@ -257,7 +262,7 @@ namespace RCC_APB1ENR_bits {
 //      01 = FLOATING
 //      10 = PULL-UP/DOWN
 //      11 = RESERVED
-// =================================================================
+// ============================================================================
 struct GPIO_t {
     vu32 CRL;           // 0x00 Config Low: pins 0-7 (4 bits per pin)
     vu32 CRH;           // 0x04 Config High: pins 8-15 (4 bits per pin)
@@ -274,10 +279,11 @@ struct GPIO_t {
 static_assert(sizeof(GPIO_t) == 28, "GPIO_t size mismatch" );
 
 static GPIO_t* const GPIOA = reinterpret_cast<GPIO_t*>(0x40010800U);
+
 static GPIO_t* const GPIOC = reinterpret_cast<GPIO_t*>(0x40011000U);
 
 
-// =================================================================
+// ============================================================================
 // FLASH - Flash Programming Interface (FPEC)
 // Base Address: 0x40022000
 //
@@ -285,7 +291,7 @@ static GPIO_t* const GPIOC = reinterpret_cast<GPIO_t*>(0x40011000U);
 //  1. Unlocking the FPEC with a key sequence (security feature)
 //  2. Erasing a full 1KB page (flash can only erase, not overwrite)
 //  3. Writing in 16-bit halfwords (the flash array is 16 bits wide)
-// =================================================================
+// ============================================================================
 struct FLASH_t{
     vu32 ACR;           // 0x00 Access control (flash wait states and latency )
     vu32 KEYR;          // 0x04 Key register - write magic values to unlock
@@ -329,7 +335,8 @@ namespace FLASH_bits {
     constexpr u32 KEYR_KEY2 = 0xCDEF89ABU;
 }
 
-// =================================================================
+
+// ============================================================================
 // SysTick - ARM Cortex-M System Timer
 // Base Address: 0xE000E010 (System Control Space)
 //
@@ -343,7 +350,7 @@ namespace FLASH_bits {
 //  -> Period = (RELOAD + 1) / f_cpu
 //  -> For 1ms at 48MHz: (RELOAD + 1 ) = 48,000 -> RELOAD = 47,999
 //  -> Maximum RELOAD: 2^24 - 1 = 16,777,215 (24-bit limit)
-// =================================================================
+// ============================================================================
 struct SysTick_t{
     vu32 CSR;           // 0x00 Control and Status
     vu32 RVR;           // 0x04 Reload Value Register ( 24-bit )
@@ -365,7 +372,7 @@ namespace SysTick_bits {
 }
 
 
-// =================================================================
+// ============================================================================
 // USB - Full-Speed Device Controller (device-only, no OTG/host capability)
 // Control/Status registers: 0x40005C00
 // Packet Memory Area (PMA): 0x40006000
@@ -381,7 +388,7 @@ namespace SysTick_bits {
 // slot doesn't connect to anything. 
 // CONSEQUENCE: We must access every USB register and every PMA word through
 // a 'vu16*', never through a 'vu32'.
-// =================================================================
+// ============================================================================
 struct USB_t{
     /**********************************************
      * USB_EPnR                                   *
@@ -411,9 +418,11 @@ static USB_t* const USB = reinterpret_cast<USB_t*>(0x40005C00U);
 namespace USB_EPnR_bits {
     constexpr u32 EA_MASK           = ( 0xFU << 0 );
     constexpr u32 STAT_TX_MASK      = ( 0x3U << 4 );
+    constexpr u32 STAT_TX_NAK       = ( 0x2U << 4 );
     constexpr u32 DTOG_TX           = ( 0x1U << 6 );
     constexpr u32 CTR_TX            = ( 0x1U << 7 );
     constexpr u32 EP_KIND           = ( 0x1U << 8 );
+    constexpr u32 EP_TYPE_MASK      =   0x0600U;
     constexpr u32 EP_TYPE_BULK      = ( 0x0U << 9 );
     constexpr u32 EP_TYPE_CONTROL   = ( 0x1U << 9 );
     constexpr u32 EP_TYPE_ISO       = ( 0x2U << 9 );
@@ -426,9 +435,9 @@ namespace USB_EPnR_bits {
 }
 
 namespace USB_CNTR_bits {
-    constexpr u32 FRES      = ( 1U << 0 );      // Force USB RESET
-    constexpr u32 PDWN      = ( 1U << 1 );      // Power Down
-    constexpr u32 FSUSP     = ( 1U << 3 );      // 
+    constexpr u32 FRES      = ( 1U << 0 );      // Force digital SIE into reset
+    constexpr u32 PDWN      = ( 1U << 1 );      // Power Down ANALOG TRANSCEIVER
+    constexpr u32 FSUSP     = ( 1U << 3 );      
     constexpr u32 RESUME    = ( 1U << 4 );
     constexpr u32 ESOFM     = ( 1U << 8 );
     constexpr u32 SOFM      = ( 1U << 9 );
@@ -441,11 +450,13 @@ namespace USB_CNTR_bits {
 }
 
 namespace USB_ISTR_bits {
-
+    constexpr u32 EP_ID_MASK    = 0xFU;
+    constexpr u32 RESET         = ( 1U << 10 );
+    constexpr u32 CTR           = ( 1u << 15 );
 }
 
 
-// =================================================================
+// ============================================================================
 // PMA_Word_t
 // 
 // Models one CPU-visible address slot of the Packet Memory Area.
@@ -455,7 +466,7 @@ namespace USB_ISTR_bits {
 // lower half-word containing the actual PMA data and the upper half-word
 // not implemented in hardware. Consequently, successive PMA words
 // are spaced 4 bytes apart in the CPU address space.
-// =================================================================
+// ============================================================================
 struct PMA_Word_t {
     vu16 data;
     private:
@@ -470,11 +481,11 @@ static_assert(sizeof(PMA_t) == 1024, "PMA_t size mismatch");
 
 static PMA_t& USB_PMA = *reinterpret_cast<PMA_t*>(0x40006000U);
 
-// =================================================================
+// ============================================================================
 // BTABLE_entry_t
 // This struct represents the entry describing the buffer for a single 
 // endpoint inside the Buffer Descriptor Table
-// =================================================================
+// ============================================================================
 struct BTABLE_entry_t {
     PMA_Word_t ADDR_TX;
     PMA_Word_t COUNT_TX;
