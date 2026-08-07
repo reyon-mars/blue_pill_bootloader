@@ -391,7 +391,7 @@ namespace SysTick_bits {
 // ============================================================================
 struct USB_t{
     /**********************************************
-     * USB_EPnR                                   *
+     * USB_EPnR (USB endpoint n register)         *
      **********************************************/
     vu16 EP0R;    vu16 _r0;         // 0x00
     vu16 EP1R;    vu16 _r1;         // 0x04
@@ -415,6 +415,23 @@ static_assert(sizeof(USB_t) == 84, "USB_t size mismatch");
 
 static USB_t* const USB = reinterpret_cast<USB_t*>(0x40005C00U);
 
+// ============================================================================
+// EPnR Bit layout:
+// |-------------------------------------------------------------------------------------------|
+// |   15   |   14    |  13:12  |  11   |   10:9  |    8    |    7   |   6     |   5:4   | 3:0 |
+// | CTR_RX | DTOG_RX | STAT_RX | SETUP | EP_TYPE | EP_KIND | CTR_TX | DTOG_TX | STAT_TX |  EA |
+// | rc_w0  | toggle  | toggle  |  RO   |  R/W    |   R/W   | rc_w0  | toggle  | toggle  | R/W |
+// |-------------------------------------------------------------------------------------------|
+//
+// Reset Value: 0x0000
+//
+// rc_w0 fields (CTR_RX, CTR_TX): hardware SETS these the instant a transfer
+// completes, independent of firmware timing. Software clears one by writing
+// 0; writing 1 leaves it untouched.
+//
+// toggle fields (DTOG_*, STAT_*): hardware can also flip these on its own.
+// Writing 0 leaves a toggle bit untouched whereas, writing 1 flips it.
+// ============================================================================
 namespace USB_EPnR_bits {
     constexpr u32 EA_MASK           = ( 0xFU << 0 );
     constexpr u32 STAT_TX_MASK      = ( 0x3U << 4 );
@@ -452,7 +469,7 @@ namespace USB_CNTR_bits {
 namespace USB_ISTR_bits {
     constexpr u32 EP_ID_MASK    = 0xFU;
     constexpr u32 RESET         = ( 1U << 10 );
-    constexpr u32 CTR           = ( 1u << 15 );
+    constexpr u32 CTR           = ( 1U << 15 );
 }
 
 
@@ -495,5 +512,6 @@ struct BTABLE_entry_t {
 
 static_assert( sizeof(BTABLE_entry_t) == 16, "BTABLE_entry_t size mismatch");
 
-
-/* This is the END ('_') */
+  /*------------------------------------------------------------*/
+ /*               This is the END ('~')                        */
+/*------------------------------------------------------------*/
