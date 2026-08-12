@@ -16,8 +16,8 @@
 // ============================================================================
 // Read/Write one 16-bit slot in PMA, given its LOCAL offset (0 - 511).
 // ============================================================================
-void pma_write( u32 local_offset, u16 value );
-u16  pma_read( u32 local_offset );
+void pma_write_word( u32 local_offset, u16 value );
+u16  pma_read_word( u32 local_offset );
 
 
 // ============================================================================
@@ -27,8 +27,8 @@ void pma_write_bytes( u32 local_offset, std::span<const std::byte> src );
 
 
 // ============================================================================
-// Encode a byte size into count_rx's |BL_SIZE | NUM_BLOCK | representation.
-// Correct for sizes needing BLSIZE = 1
+// Encode a byte size into count_rx's | BL_SIZE | NUM_BLOCK | representation.
+// Correct for sizes needing BL_SIZE = 1.
 // ============================================================================
 u16 pma_count_rx_encode( u16 byte_size );
 
