@@ -20,7 +20,7 @@ namespace {
 // in startup.s. The linker prefers strong definitions over weak ones.
 // =================================================================
 extern "C" void SysTick_Handler(void){
-    g_ms++;
+    g_ms = g_ms + 1;
 }
 
 inline u32 get_tick_ms(){
