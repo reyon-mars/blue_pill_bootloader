@@ -51,7 +51,7 @@ ARCH_FLAGS = -mcpu=cortex-m3 -mthumb -mfloat-abi=soft
 #						  function.
 # ------------------------------------------------------------------
 CXXFLAGS	 = $(ARCH_FLAGS)
-CXXFLAGS	+= -std=c++17
+CXXFLAGS	+= -std=c++20
 CXXFLAGS	+= -fno-exceptions
 CXXFLAGS	+= -fno-rtti
 CXXFLAGS	+= -fno-threadsafe-statics
