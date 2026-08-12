@@ -59,10 +59,10 @@ struct SCB_t {
 // If this fails, the struct fields are wrong ( wrong type, wrong count, padding ).
 static_assert(sizeof(SCB_t) == 64, "SCB_t size mismatch");
 
-// The single SCB peripheral instance. 'static' means this symbol is 
+// The single SCB peripheral instance. 'inline' means this symbol is 
 // not exported to other translation units (avoids link-time collisions 
 // when multiple .cpp files include this header ).
-static SCB_t* const SCB = reinterpret_cast<SCB_t*>(0xE000ED00U);
+inline SCB_t* const SCB = reinterpret_cast<SCB_t*>(0xE000ED00U);
 
 // SCB_CCR bit definitions
 namespace SCB_CCR_bits{
@@ -125,7 +125,7 @@ struct NVIC_t {
 
 static_assert(sizeof(NVIC_t) == 3588, "NVIC_t size mismatch");
 
-static NVIC_t* const NVIC = reinterpret_cast<NVIC_t*>(0xE000E100U);
+inline NVIC_t* const NVIC = reinterpret_cast<NVIC_t*>(0xE000E100U);
 
 // NVIC helper functions
 namespace NVIC_helpers {
@@ -175,7 +175,7 @@ struct RCC_t {
 
 static_assert(sizeof(RCC_t) == 40, "RCC_t size mismatch - check register definitions");
 
-static RCC_t* const RCC = reinterpret_cast<RCC_t*>(0x40021000U);
+inline RCC_t* const RCC = reinterpret_cast<RCC_t*>(0x40021000U);
 
 // RCC_CR bit definitions
 namespace RCC_CR_bits {
@@ -278,9 +278,9 @@ struct GPIO_t {
 
 static_assert(sizeof(GPIO_t) == 28, "GPIO_t size mismatch" );
 
-static GPIO_t* const GPIOA = reinterpret_cast<GPIO_t*>(0x40010800U);
+inline GPIO_t* const GPIOA = reinterpret_cast<GPIO_t*>(0x40010800U);
 
-static GPIO_t* const GPIOC = reinterpret_cast<GPIO_t*>(0x40011000U);
+inline GPIO_t* const GPIOC = reinterpret_cast<GPIO_t*>(0x40011000U);
 
 
 // ============================================================================
@@ -306,7 +306,7 @@ struct FLASH_t{
 
 static_assert(sizeof(FLASH_t) == 36, "FLASH_t size mismatch" );
 
-static FLASH_t* const FLASH = reinterpret_cast<FLASH_t*>(0x40022000U);
+inline FLASH_t* const FLASH = reinterpret_cast<FLASH_t*>(0x40022000U);
 
 
 namespace FLASH_bits {
@@ -360,7 +360,7 @@ struct SysTick_t{
 
 static_assert(sizeof(SysTick_t) == 16, "SysTick_t size mismatch");
 
-static SysTick_t* const SYSTICK = reinterpret_cast<SysTick_t*>(0xE000E010U);
+inline SysTick_t* const SYSTICK = reinterpret_cast<SysTick_t*>(0xE000E010U);
 
 namespace SysTick_bits {
     constexpr u32 CSR_ENABLE    = ( 1U << 0 );      // 1 = start counting, 0 = stop
@@ -413,7 +413,7 @@ struct USB_t{
 
 static_assert(sizeof(USB_t) == 84, "USB_t size mismatch");
 
-static USB_t* const USB = reinterpret_cast<USB_t*>(0x40005C00U);
+inline USB_t* const USB = reinterpret_cast<USB_t*>(0x40005C00U);
 
 // ============================================================================
 // EPnR Bit layout:
@@ -496,7 +496,7 @@ using PMA_t = std::array<PMA_Word_t, 256>;
 
 static_assert(sizeof(PMA_t) == 1024, "PMA_t size mismatch");
 
-static PMA_t& USB_PMA = *reinterpret_cast<PMA_t*>(0x40006000U);
+inline PMA_t& USB_PMA = *reinterpret_cast<PMA_t*>(0x40006000U);
 
 // ============================================================================
 // BTABLE_entry_t
