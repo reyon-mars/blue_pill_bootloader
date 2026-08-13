@@ -15,21 +15,22 @@
 
 
 // ============================================================================
-// PMA_BLSIZE
+// PMA_BLSIZE_t
 //
 // Defines the allocation block size (BLSIZE, bit 15) for the endpoint reception
 // buffer capacity field (COUNT_RX_n) in the USB Buffer Table (BTABLE).
 //
 //  • Small_2Bytes  [BLSIZE = 0] : 2-byte block step
+//
 //  • Large_32Bytes [BLSIZE = 1] : 32-byte block step
 // ============================================================================
-enum class PMA_BLSIZE : u8 {
+enum class PMA_BLSIZE_t : u8 {
   Small_2Bytes  = 0,
   Large_32Bytes = 1
 };
 
 
-// =================================================================
+// ============================================================================
 // pma_count_rx_encode()
 //
 // Encodes the maximum RX buffer capacity into the 16-bit format 
@@ -38,7 +39,7 @@ enum class PMA_BLSIZE : u8 {
 //              
 //              BTABLE 'COUNT_RX_n' Bitfield Layout
 //      ┌──────────┬──────────────────┬──────────────────────┐
-//      |  BIT 15  |    BITS 14:10    |        BITS 9:0      |
+//      │  BIT 15  |    BITS 14:10    |        BITS 9:0      |
 //      ├──────────┼──────────────────┼──────────────────────┤
 //      |  BLSIZE  |    NUM_BLOCK     |      COUNT_RX        |
 //      | (write)  |    (write)       | (Hardware written    |
@@ -48,27 +49,29 @@ enum class PMA_BLSIZE : u8 {
 // Buffer Capacity Encoding Rules:
 //
 // 1. Small Buffer Mode [BLSIZE = 0] (Capacity: 2 to 62 bytes)
+//    • Index Starts from 1
 //    • Capacity = NUM_BLOCK x 2
 //    • NUM_BLOCK = ( max_bytes + 1 ) / 2
 //
 // 2. Large Buffer Mode [BLSIZE = 1] (Capacity: 32 to 512 bytes)
+//    • Index Starts from 0
 //    • Capacity = ( NUM_BLOCK + 1 ) x 32
 //    • NUM_BLOCK = ((max_bytes + 31) / 32) - 1 
 // 
 // max_bytes : Desired RX buffer capacity in bytes.
-// =================================================================
-constexpr u16 pma_count_rx_encode( u16 byte_size, PMA_BLSIZE block_size ) {
+// ============================================================================
+constexpr u16 pma_count_rx_encode( u16 byte_size, PMA_BLSIZE_t block_size ) {
     if( byte_size == 0 ) {
         return 0;
     }
 
-    if( block_size == PMA_BLSIZE::Large_32Bytes ) {
-        const u16 num_blocks_minus_one = static_cast<u16>( ( byte_size - 1U ) >> 5);
-        return static_cast<u16>(( 1U << 15 ) | ( (num_blocks_minus_one & 0x1FU ) << 10 ));
+    if( block_size == PMA_BLSIZE_t::Large_32Bytes ) {
+        const u16 num_blocks_minus_one = static_cast<u16>((byte_size - 1U) >> 5);
+        return static_cast<u16>((1U << 15) | ((num_blocks_minus_one & 0x1FU) << 10));
     }
 
-    const u16 num_blocks = static_cast<u16>((byte_size + 1U ) >> 1 );
-    return static_cast<u16>( ( num_blocks & 0x1FU ) << 10 );   
+    const u16 num_blocks = static_cast<u16>((byte_size + 1U) >> 1);
+    return static_cast<u16>((num_blocks & 0x1FU) << 10);   
 }
 
 
