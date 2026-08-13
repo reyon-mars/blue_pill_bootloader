@@ -389,15 +389,18 @@ namespace SysTick_bits {
 // CONSEQUENCE: We must access every USB register and every PMA word through
 // a 'vu16*', never through a 'vu32'.
 // ============================================================================
-struct USB_t{
+struct USB_t {
     /**********************************************
      * USB_EPnR (USB endpoint n register)         *
      * Offset : 0x00 - 0x1F  ( 32 bytes )         *
+     *--------------------------------------------*
+     * EPnR_t:                                    *
+     * Pairs each EPnR with 16-bit padding to     *
+     * match the 4-byte hardware stride.          *
      **********************************************/
     struct EPnR_t {
-            vu16 EP_Register;
-        private:
-            u16 _unused;
+        vu16 value;
+        u16  _unused;
     };
     std::array<EPnR_t, 8> EPnR;
     std::array<u16,   16> RESERVED;  // 0x20-0x3F
