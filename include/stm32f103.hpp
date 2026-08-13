@@ -429,9 +429,9 @@ inline USB_t* const USB = reinterpret_cast<USB_t*>(0x40005C00U);
 // └────────┴─────────┴─────────┴───────┴─────────┴─────────┴────────┴─────────┴─────────┴─────┘
 //
 //
-// Read-Clear-Write-0 (rc_w0) fields [CTR_RX, CTR_TX]: hardware SETS these the instant a transfer
-// completes, independent of firmware timing. Software clears one by writing
-// 0; writing 1 leaves it untouched.
+// Read/Clear on write 0 (rc_w0) fields [CTR_RX, CTR_TX]: 
+// hardware SETS these the instant a transfer completes, independent of firmware timing. 
+// Software clears one by writing 0; writing 1 leaves it untouched.
 //
 // toggle fields (DTOG_*, STAT_*): hardware can also flip these on its own.
 // Writing 0 leaves a toggle bit untouched, whereas writing 1 flips it.
