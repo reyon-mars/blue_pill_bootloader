@@ -392,16 +392,15 @@ namespace SysTick_bits {
 struct USB_t{
     /**********************************************
      * USB_EPnR (USB endpoint n register)         *
+     * Offset : 0x00 - 0x1F  ( 32 bytes )         *
      **********************************************/
-    vu16 EP0R;    vu16 _r0;         // 0x00
-    vu16 EP1R;    vu16 _r1;         // 0x04
-    vu16 EP2R;    vu16 _r2;         // 0x08
-    vu16 EP3R;    vu16 _r3;         // 0x0C
-    vu16 EP4R;    vu16 _r4;         // 0x10
-    vu16 EP5R;    vu16 _r5;         // 0x14
-    vu16 EP6R;    vu16 _r6;         // 0x18
-    vu16 EP7R;    vu16 _r7;         // 0x1C
-    std::array<vu16, 16> RESERVED;  // 0x20-0x3F
+    struct EPnR_t {
+            vu16 EP_Register;
+        private:
+            u16 _unused;
+    };
+    std::array<EPnR_t, 8> EPnR;
+    std::array<u16,   16> RESERVED;  // 0x20-0x3F
     /**********************************************/
     vu16 CNTR;    vu16 _r_cntr;     // 0x40 Control: reset, power-down, suspend/resume, per-event IRQ enables
     vu16 ISTR;    vu16 _r_istr;     // 0x44 Interrupt Status: which event fired + which endpoint (EP_ID, DIR)
