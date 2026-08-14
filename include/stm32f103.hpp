@@ -413,6 +413,8 @@ struct USB_t {
                                     // (addr/count pairs) begin.
 };
 
+static_assert(sizeof(USB_t::EPnR_t) == 4, "EPnR_t size mismatch");
+
 static_assert(sizeof(USB_t) == 84, "USB_t size mismatch");
 
 inline USB_t* const USB = reinterpret_cast<USB_t*>(0x40005C00U);
