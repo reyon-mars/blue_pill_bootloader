@@ -33,6 +33,29 @@ enum class EP_Num_t : u8 {
 
 
 // ============================================================================
+// BTABLE_entry_t
+//
+// Represents the hardware descriptor entry for a single endpoint in the USB
+// Buffer Table (BTABLE), located inside Packet Memory Area (PMA). The USB
+// Serial Interface Engine (SIE) automatically accesses these descriptors 
+// during packet transfers to locate hardware buffers and manage byte counts.
+//
+//  • ADDR_TX   : Starting PMA byte offset for the transmit (IN) buffer.
+//  • COUNT_TX  : Number of bytes to transmit on the next IN token.
+//  • ADDR_RX   : Starting PMA byte offset for the receive (OUT/SETUP) buffer.
+//  • COUNT_RX  : Allocated RX buffer capacity (write) / Bytes received (read).
+// ============================================================================
+struct BTABLE_entry_t {
+    PMA_Word_t ADDR_TX;
+    PMA_Word_t COUNT_TX;
+    PMA_Word_t ADDR_RX;
+    PMA_Word_t COUNT_RX;
+};
+
+static_assert(sizeof(BTABLE_entry_t) == 16, "BTABLE_entry_t size mismatch");
+
+
+// ============================================================================
 // PMA_BLSIZE_t
 //
 // Defines the allocation block size (BLSIZE, bit 15) for the endpoint reception

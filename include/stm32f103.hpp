@@ -460,10 +460,15 @@ namespace USB_EPnR_bits {
 }
 
 namespace USB_CNTR_bits {
+    // Bits 0-4: operational state. Purely software owned, nothing here
+    // is ever changed by the SIE on its own. Ordinary register writes
+    // are safe; no invariant-write needed, unlike EPnR.
     constexpr u32 FRES      = ( 1U << 0 );      // Force digital SIE into reset
     constexpr u32 PDWN      = ( 1U << 1 );      // Power Down ANALOG TRANSCEIVER
+    constexpr u32 LP_MODE   = ( 1U << 2 );
     constexpr u32 FSUSP     = ( 1U << 3 );      
     constexpr u32 RESUME    = ( 1U << 4 );
+
     constexpr u32 ESOFM     = ( 1U << 8 );
     constexpr u32 SOFM      = ( 1U << 9 );
     constexpr u32 RESETM    = ( 1U << 10 );
@@ -475,7 +480,11 @@ namespace USB_CNTR_bits {
 }
 
 namespace USB_ISTR_bits {
+    // EP_ID/DIR are metadata attached to CTR specifically they only
+    // mean something in the same instant CTR is set.
     constexpr u32 EP_ID_MASK    = 0xFU;
+    constexpr u32 DIR           = ( 1U << 4 );
+    
     constexpr u32 RESET         = ( 1U << 10 );
     constexpr u32 CTR           = ( 1U << 15 );
 }
@@ -505,19 +514,6 @@ static_assert(sizeof(PMA_t) == 1024, "PMA_t size mismatch");
 
 inline PMA_t& USB_PMA = *reinterpret_cast<PMA_t*>(0x40006000U);
 
-// ============================================================================
-// BTABLE_entry_t
-// This struct represents the entry describing the buffer for a single 
-// endpoint inside the Buffer Descriptor Table
-// ============================================================================
-struct BTABLE_entry_t {
-    PMA_Word_t ADDR_TX;
-    PMA_Word_t COUNT_TX;
-    PMA_Word_t ADDR_RX;
-    PMA_Word_t COUNT_RX;
-};
-
-static_assert(sizeof(BTABLE_entry_t) == 16, "BTABLE_entry_t size mismatch");
 
   /*------------------------------------------------------------*/
  /*               This is the END ('~')                        */

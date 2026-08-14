@@ -33,6 +33,6 @@ int main()
         delay_ms(500 );
     }
 
-    pma_count_rx_encode(23, PMA_Block_size::Large_32Bytes);
+    pma_count_rx_encode(23, PMA_BLSIZE_t::Large_32Bytes);
     return 0;
 }
