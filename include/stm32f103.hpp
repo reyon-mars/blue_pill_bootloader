@@ -46,7 +46,7 @@ struct SCB_t {
     vu32 SHPR1;     // 0x18 System Handler Priority 1 (MemManage, BusFault, UsageFault)
     vu32 SHPR2;     // 0x1C System Handler Priority 2 (SVCall)
     vu32 SHPR3;     // 0x20 System Handler Priority 3 (PendSV, SysTick)
-    vu32 SHCSR;     // 0x24 System Handler Control & State (enable/ pending/ active bits)
+    vu32 SHCSR;     // 0x24 System Handler Control & State (enable / pending / active bits)
     vu32 CFSR;      // 0x28 Configurable Fault Status (MemManage + BusFault + UsageFault causes)
     vu32 HFSR;      // 0x2C HardFault Status (escalation cause)
     vu32 DFSR;      // 0x30 Debug Fault Status
@@ -405,11 +405,11 @@ struct USB_t {
     std::array<EPnR_t, 8> EPnR;
     std::array<u16,   16> RESERVED;  // 0x20-0x3F
     /**********************************************/
-    vu16 CNTR;    vu16 _r_cntr;     // 0x40 Control: reset, power-down, suspend/resume, per-event IRQ enables
-    vu16 ISTR;    vu16 _r_istr;     // 0x44 Interrupt Status: which event fired + which endpoint (EP_ID, DIR)
-    vu16 FNR;     vu16 _r_fnr;      // 0x48 Frame Number: current USB frame count + error flags from the last SOF
-    vu16 DADDR;   vu16 _r_daddr;    // 0x4C Device Address: assigned by the host during enumeration + enable bit
-    vu16 BTABLE;  vu16 _r_btable;   // 0x50 Buffer Table Address: PMA offset where the 8 endpoints' buffer descriptors
+    vu16 CNTR;     u16 _r_cntr;     // 0x40 Control: reset, power-down, suspend/resume, per-event IRQ enables
+    vu16 ISTR;     u16 _r_istr;     // 0x44 Interrupt Status: which event fired + which endpoint (EP_ID, DIR)
+    vu16 FNR;      u16 _r_fnr;      // 0x48 Frame Number: current USB frame count + error flags from the last SOF
+    vu16 DADDR;    u16 _r_daddr;    // 0x4C Device Address: assigned by the host during enumeration + enable bit
+    vu16 BTABLE;   u16 _r_btable;   // 0x50 Buffer Table Address: PMA offset where the 8 endpoints' buffer descriptors
                                     // (addr/count pairs) begin.
 };
 
@@ -494,7 +494,6 @@ namespace USB_ISTR_bits {
 // ============================================================================
 struct PMA_Word_t {
     vu16 data;
-    private:
     u16 _padding;
 };
 
