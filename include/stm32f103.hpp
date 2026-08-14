@@ -440,21 +440,59 @@ inline USB_t* const USB = reinterpret_cast<USB_t*>(0x40005C00U);
 // Writing 0 leaves a toggle bit untouched, whereas writing 1 flips it.
 // ============================================================================================
 namespace USB_EPnR_bits {
+    // Bits [3:0] EA: Endpoint Address (rw)
+    // Assigned by software during initialization (0 to 15). Associates
+    // this hardware EPnR register with a logical USB endpoint address.
     constexpr u32 EA_MASK           = ( 0xFU << 0 );
+    // Bits [5:4] STAT_TX: Mask for transmit status (toggle)
+    //  -> 00 : DISABLED
+    //  -> 01 : STALL
+    //  -> 10 : NAK
+    //  -> 11 : VALID
     constexpr u32 STAT_TX_MASK      = ( 0x3U << 4 );
+    constexpr u32 STAT_TX_DISABLED  = ( 0x0U << 4 );
+    constexpr u32 STAT_TX_STALL     = ( 0x1U << 4 );
     constexpr u32 STAT_TX_NAK       = ( 0x2U << 4 );
+    constexpr u32 STAT_TX_VALID     = ( 0x3U << 4 );
+    // Bit 6 DTOG_TX: Transmit data toggle bit (DATA0 <-> DATA1) (toggle)
+    // Flips automatically on every successful IN transaction.
     constexpr u32 DTOG_TX           = ( 0x1U << 6 );
+    // Bit 7 CTR_TX: Correct Transfer Transmit (IN Token Complete)
+    // Hardware sets to 1 when an IN packet is successfully sent to the host.
     constexpr u32 CTR_TX            = ( 0x1U << 7 );
+
+    // Bit 8 EP_KIND: Endpoint Kind / Double Buffer Feature
+    // Behaviour depends on EP_TYPE:
+    //  -> BULK     : 1 enables Double Buffering mode.
+    //  -> CONTROL  : 1 enables Status Out handling (STATUS_OUT)
     constexpr u32 EP_KIND           = ( 0x1U << 8 );
-    constexpr u32 EP_TYPE_MASK      =   0x0600U;
-    constexpr u32 EP_TYPE_BULK      = ( 0x0U << 9 );
-    constexpr u32 EP_TYPE_CONTROL   = ( 0x1U << 9 );
-    constexpr u32 EP_TYPE_ISO       = ( 0x2U << 9 );
-    constexpr u32 EP_TYPE_INTERRUPT = ( 0x3U << 9 );
+    // Bits [10:9] EP_TYPE: Mask and encoding for USB transfer mechanism
+    constexpr u32 EP_TYPE_MASK      = ( 0x3U << 9 );
+    constexpr u32 EP_TYPE_BULK      = ( 0x0U << 9 );    // Bulk endpoint
+    constexpr u32 EP_TYPE_CONTROL   = ( 0x1U << 9 );    // Control endpoint (Default for EP0)
+    constexpr u32 EP_TYPE_ISO       = ( 0x2U << 9 );    // Isochronous endpoint
+    constexpr u32 EP_TYPE_INTERRUPT = ( 0x3U << 9 );    // Interrupt endpoint
+    // Bit 11 SETUP: Setup Packet Received Flag (ro)
+    // Hardware sets to 1 when a valid SETUP packet is received on a 
+    // Control endpoint. Read-Only.
     constexpr u32 SETUP             = ( 0x1U << 11 );
+    // Bits [13:12] STAT_RX: Mask for receive status (toggle)
+    //  -> 00 : DISABLED
+    //  -> 01 : STALL
+    //  -> 10 : NAK
+    //  -> 11 : VALID
     constexpr u32 STAT_RX_MASK      = ( 0x3U << 12 );
+    constexpr u32 STAT_RX_DISABLED  = ( 0x0U << 12 );
+    constexpr u32 STAT_RX_STALL     = ( 0x1U << 12 );
+    constexpr u32 STAT_RX_NAK       = ( 0x2U << 12 );
+    constexpr u32 STAT_RX_VALID     = ( 0x3U << 12 );
+    // Bit 14 DTOG_RX: Data Toggle for Receive (OUT Direction)
+    // Hardware toggles this on every successful OUT transaction (DATA0 <-> DATA1).
     constexpr u32 DTOG_RX           = ( 0x1U << 14 );
+    // Bit 15 CTR_RX: Correct Transfer Receive (OUT/SETUP Token Complete)
+    // Hardware sets to 1 when an OUT or SETUP packet is successfully received.
     constexpr u32 CTR_RX            = ( 0x1U << 15 );
+    // Mask containing all toggle-on-write bits in EPnR.
     constexpr u32 TOGGLE_BITS       = ( DTOG_TX | DTOG_RX | STAT_TX_MASK | STAT_RX_MASK );
 }
 
