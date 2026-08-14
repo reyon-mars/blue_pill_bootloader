@@ -115,7 +115,7 @@ void pma_write_words( u32 local_offset, std::span<const u16> src );
 // Change STAT_TX/STAT_RX on one endpoint's EPnR safely, at any time.
 // Avoid a blind read-modify-write.
 // ============================================================================
-void ep_set_status( u8 ep_num, u16 new_stat_tx, u16 new_stat_rx );
+void ep_set_status( EP_Num_t ep_num, u16 new_stat_tx, u16 new_stat_rx );
 
 
   /*--------------------------------------------------------------------------*/

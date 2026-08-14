@@ -1,4 +1,5 @@
 #include "../include/usb.hpp"
+#include <cstddef>
 
 // =================================================================
 // pma_write_word()
@@ -66,9 +67,9 @@ void pma_write_words( u32 local_offset, std::span<const u16> src ) {
 //                        the status fields does not unintentionally
 //                        modify these fields.
 // ===================================================================
-void ep_set_status( u8 ep_num, u16 new_stat_tx, u16 new_stat_rx ) {
+void ep_set_status( EP_Num_t ep_num, u16 new_stat_tx, u16 new_stat_rx ) {
     
-    const u16 read_state = USB->EPnR[ep_num].value;
+    const u16 read_state = USB->EPnR[ static_cast<size_t>(ep_num) ].value;
     
     const u16 toggle_tx = (read_state & USB_EPnR_bits::STAT_TX_MASK) ^ new_stat_tx;
     const u16 toggle_rx = (read_state & USB_EPnR_bits::STAT_RX_MASK) ^ new_stat_rx;
@@ -77,7 +78,7 @@ void ep_set_status( u8 ep_num, u16 new_stat_tx, u16 new_stat_rx ) {
                                         | USB_EPnR_bits::EP_KIND      
                                         | USB_EPnR_bits::EA_MASK );
 
-    USB->EPnR[ep_num].value =   preserved
+    USB->EPnR[ static_cast<size_t>(ep_num) ].value =   preserved
                               | USB_EPnR_bits::CTR_RX
                               | USB_EPnR_bits::CTR_TX
                               | toggle_rx
