@@ -61,15 +61,19 @@ enum class PMA_BLSIZE_t : u8 {
 // max_bytes : Desired RX buffer capacity in bytes.
 // ============================================================================
 constexpr u16 pma_count_rx_encode( u16 byte_size, PMA_BLSIZE_t block_size ) {
-    if( byte_size == 0 ) {
+    if ( byte_size == 0 ) {
         return 0;
     }
 
-    if( block_size == PMA_BLSIZE_t::Large_32Bytes ) {
+    // Large Block: Step = 32 bytes, BLSIZE = 1
+    // NUM_BLOCK = ceil(byte_size / 32) - 1
+    if ( block_size == PMA_BLSIZE_t::Large_32Bytes ) {
         const u16 num_blocks_minus_one = static_cast<u16>((byte_size - 1U) >> 5);
         return static_cast<u16>((1U << 15) | ((num_blocks_minus_one & 0x1FU) << 10));
     }
 
+    // Small Block: Step = 2 bytes, BLSIZE = 0
+    // NUM_BLOCK = ceil(byte_size / 2)
     const u16 num_blocks = static_cast<u16>((byte_size + 1U) >> 1);
     return static_cast<u16>((num_blocks & 0x1FU) << 10);   
 }
