@@ -15,6 +15,24 @@
 
 
 // ============================================================================
+// EP_Num_t
+//
+// Defines a typed identifier for the 8 hardware endpoints (EP0..EP7) to prevent
+// parameter-swapping bugs and guarantee valid endpoint range bounds.
+// ============================================================================
+enum class EP_Num_t : u8 {
+    EP0 = 0,
+    EP1 = 1,
+    EP2 = 2,
+    EP3 = 3,
+    EP4 = 4,
+    EP5 = 5,
+    EP6 = 6,
+    EP7 = 7
+};
+
+
+// ============================================================================
 // PMA_BLSIZE_t
 //
 // Defines the allocation block size (BLSIZE, bit 15) for the endpoint reception

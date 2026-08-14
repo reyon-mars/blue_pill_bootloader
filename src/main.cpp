@@ -1,9 +1,11 @@
 #include "../include/stm32f103.hpp"
 #include "../include/system.hpp"
+#include "../include/usb.hpp"
 
-[[maybe_unused]]static void delay( vu32 count )
+[[maybe_unused]]static void delay( vu32& count )
 {
-    while( count-- ){
+    while( count ){
+        count = count - 1;
         // Empty. The compiler might optimize this away, so make count a volatile.       
     }
 }
@@ -30,5 +32,7 @@ int main()
         GPIOC->BSRR = PC13_SET;
         delay_ms(500 );
     }
+
+    pma_count_rx_encode(23, PMA_Block_size::Large_32Bytes);
     return 0;
 }
