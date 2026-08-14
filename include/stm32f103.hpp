@@ -391,7 +391,7 @@ namespace SysTick_bits {
 // ============================================================================
 struct USB_t {
     /**********************************************
-     * USB_EPnR (USB endpoint n register)         *
+     * USB_EPnR (USB EndPoint n Register)         *
      * Offset : 0x00 - 0x1F  ( 32 bytes )         *
      *--------------------------------------------*
      * EPnR_t:                                    *
@@ -403,7 +403,7 @@ struct USB_t {
         u16  _unused;
     };
     std::array<EPnR_t, 8> EPnR;
-    std::array<u16,   16> RESERVED;  // 0x20-0x3F
+    std::array<u16,   16> RESERVED; // 0x20-0x3F
     /**********************************************/
     vu16 CNTR;     u16 _r_cntr;     // 0x40 Control: reset, power-down, suspend/resume, per-event IRQ enables
     vu16 ISTR;     u16 _r_istr;     // 0x44 Interrupt Status: which event fired + which endpoint (EP_ID, DIR)
@@ -517,7 +517,7 @@ struct BTABLE_entry_t {
     PMA_Word_t COUNT_RX;
 };
 
-static_assert( sizeof(BTABLE_entry_t) == 16, "BTABLE_entry_t size mismatch");
+static_assert(sizeof(BTABLE_entry_t) == 16, "BTABLE_entry_t size mismatch");
 
   /*------------------------------------------------------------*/
  /*               This is the END ('~')                        */
