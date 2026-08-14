@@ -19,6 +19,7 @@
 using u8    = uint8_t;
 using u16   = uint16_t;
 using u32   = uint32_t;
+
 /*-----------------------------------------------------------*
  *  Aliases For Hardware Registers                           *
  *-----------------------------------------------------------*/
@@ -31,7 +32,7 @@ using vu32  = volatile uint32_t;
 // SCB - System Control Block (ARM Cortex-M3 core peripheral)
 // Base address: 0xE000ED00
 // 
-// This is NOT an ST peripheral, it is the part of the ARMv7-M architecture 
+// This is NOT an ST peripheral, it is  part of the ARMv7-M architecture 
 // itself, byte-identical on every Cortex-M3 from any vendor. Governs
 // exception behaviour, reports fault causes, and holds VTOR (Vector
 // Table Offset Register).
@@ -61,7 +62,7 @@ static_assert(sizeof(SCB_t) == 64, "SCB_t size mismatch");
 
 // The single SCB peripheral instance. 'inline' means this symbol is 
 // not exported to other translation units (avoids link-time collisions 
-// when multiple .cpp files include this header ).
+// when multiple .cpp files include this header).
 inline SCB_t* const SCB = reinterpret_cast<SCB_t*>(0xE000ED00U);
 
 // SCB_CCR bit definitions
@@ -148,7 +149,6 @@ namespace NVIC_helpers {
         NVIC->ICER[irq/32] = (1U << ( irq % 32 ));
     }
 }
-
 
 
 // ============================================================================
@@ -307,7 +307,6 @@ struct FLASH_t{
 static_assert(sizeof(FLASH_t) == 36, "FLASH_t size mismatch" );
 
 inline FLASH_t* const FLASH = reinterpret_cast<FLASH_t*>(0x40022000U);
-
 
 namespace FLASH_bits {
     // ACR - wait states required based on SYSCLK frequency
