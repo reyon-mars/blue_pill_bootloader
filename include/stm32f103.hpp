@@ -1,12 +1,12 @@
 /************************************************************
- * 
- * stm32f103.hpp
- *
- * Raw register definitions for STM32F103C8T6.
- *
- * Struct-based peripheral mapping
- *
- ***********************************************************/
+ *                                                          *
+ * stm32f103.hpp                                            *
+ *                                                          *
+ * Raw register definitions for STM32F103C8T6.              *
+ *                                                          *
+ * Struct-based peripheral mapping                          *
+ *                                                          *
+ ************************************************************/
 
 #pragma  once
 #include <array>
@@ -14,7 +14,7 @@
 
 
 /*-----------------------------------------------------------*
- *  Type aliases                                              *
+ *  Type aliases                                             *
  *-----------------------------------------------------------*/
 using u8    = uint8_t;
 using u16   = uint16_t;
@@ -497,33 +497,62 @@ namespace USB_EPnR_bits {
 }
 
 namespace USB_CNTR_bits {
-    // Bits 0-4: operational state. Purely software owned, nothing here
-    // is ever changed by the SIE on its own. Ordinary register writes
-    // are safe; no invariant-write needed, unlike EPnR.
-    constexpr u32 FRES      = ( 1U << 0 );      // Force digital SIE into reset
-    constexpr u32 PDWN      = ( 1U << 1 );      // Power Down ANALOG TRANSCEIVER
-    constexpr u32 LP_MODE   = ( 1U << 2 );
-    constexpr u32 FSUSP     = ( 1U << 3 );      
-    constexpr u32 RESUME    = ( 1U << 4 );
-
-    constexpr u32 ESOFM     = ( 1U << 8 );
-    constexpr u32 SOFM      = ( 1U << 9 );
-    constexpr u32 RESETM    = ( 1U << 10 );
-    constexpr u32 SUSPM     = ( 1U << 11 );
-    constexpr u32 WKUPM     = ( 1U << 12 );
-    constexpr u32 ERRM      = ( 1U << 13 );
-    constexpr u32 PMAOVRM   = ( 1U << 14 );
-    constexpr u32 CTRM      = ( 1U << 15 );
+    // Bits [4:0] - USB Peripheral Control Bits
+    // These bits control the operational state. Purely software owned,
+    // nothing here is ever changed by the SIE on its own. Ordinary
+    // register writes are safe; no invariant-write needed, unlike EPnR.
+    constexpr u32 FRES      = ( 1U << 0 );      // Force digital SIE into reset.
+    constexpr u32 PDWN      = ( 1U << 1 );      // Power Down ANALOG TRANSCEIVER.
+    constexpr u32 LP_MODE   = ( 1U << 2 );      // Enable USB low-power mode.
+    constexpr u32 FSUSP     = ( 1U << 3 );      // Force the USB peripheral into suspend.
+    constexpr u32 RESUME    = ( 1U << 4 );      // Initiates a USB resume sequence.
+    // Bits [15:8] - USB Interrupt Mask Bits
+    // Interrupt masks. Setting one of these does not create an
+    // underlying event; it only decides whether that event, once it happens,
+    // is allowed to escalate into an actual NVIC interrupt. The matching
+    // status flag in ISTR still becomes true even if its mask bit here is 0.
+    constexpr u32 ESOFM     = ( 1U << 8 );      // Enable interrupt on expected-SOF error.
+    constexpr u32 SOFM      = ( 1U << 9 );      // Enable interrupt on Start-of-Frame.
+    constexpr u32 RESETM    = ( 1U << 10 );     // Enable interrupt on USB reset detection.
+    constexpr u32 SUSPM     = ( 1U << 11 );     // Enable interrupt on USB suspend detection.
+    constexpr u32 WKUPM     = ( 1U << 12 );     // Enable interrupt on USB wakeup detection.
+    constexpr u32 ERRM      = ( 1U << 13 );     // Enable interrupt on USB error detection.
+    constexpr u32 PMAOVRM   = ( 1U << 14 );     // Enable interrupt on PMA overrun detection.
+    constexpr u32 CTRM      = ( 1U << 15 );     // Enable interrupt on correct transfer.
 }
 
 namespace USB_ISTR_bits {
-    // EP_ID/DIR are metadata attached to CTR specifically they only
+    // Bits [4:0] - Transaction Metadata (ro) 
+    // EP_ID/DIR are metadata attached to CTR specifically; they only
     // mean something in the same instant CTR is set.
-    constexpr u32 EP_ID_MASK    = 0xFU;
-    constexpr u32 DIR           = ( 1U << 4 );
-    
-    constexpr u32 RESET         = ( 1U << 10 );
-    constexpr u32 CTR           = ( 1U << 15 );
+    constexpr u32 EP_ID_MASK    = 0xFU;         // Endpoint number associated with the CTR.
+    constexpr u32 DIR           = ( 1U << 4 );  // Transfer direction associated with CTR.
+    // Bits [14:8] - Bus Event & Interrupt Status Flags (rc_w0)
+    // rc_w0: hardware sets these autonomously on the matching bus event;
+    // firmware clears one by writing 0 to it; 1 leaves it untouched.
+    constexpr u32 ESOF          = ( 1U << 8 );  // Expected Start-of-Frame error detected.
+    constexpr u32 SOF           = ( 1U << 9 );  // Start-of-Frame event detected.
+    constexpr u32 RESET         = ( 1U << 10 ); // USB Reset sequence detected.
+    constexpr u32 SUSP          = ( 1U << 11 ); // USB Suspend condition detected.
+    constexpr u32 WKUP          = ( 1U << 12 ); // USB Wakeup event detected.
+    constexpr u32 ERR           = ( 1U << 13 ); // USB error detected.
+    constexpr u32 PMAOVR        = ( 1U << 14 ); // Packet Memory Area overrun detected.
+    // Bit 15 - Correct Transfer Flag
+    // Read-Only. Not an independent flag. This bit is the live logical OR
+    // of every EPnR[n].CTR_RX / CTR_TX across all 8 endpoints. Cannot
+    // be cleared by writing ISTR at all; goes low on its own only once
+    // every underlying EPnR completion bit has been cleared.
+    constexpr u32 CTR           = ( 1U << 15 ); // At least one endpoint has a correct transfer.
+}
+
+namespace USB_DADDR_bits {
+    // Bits [6:0] ADD: Device Address
+    // 7-bit USB device address assigned by the host during enumeration.
+    constexpr u32 ADDR_MASK = 0x7FU;
+    // Bit 7 EF: Enable Function
+    // When clear (0), the USB macro is disabled and does not respond to any bus
+    // activity regardless of ADD's value.
+    constexpr u32 EF        = ( 1U << 7 );
 }
 
 
