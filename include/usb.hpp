@@ -12,11 +12,13 @@
 
 #pragma  once
 #include "stm32f103.hpp"
+#include <array>
 #include <span>
 
 
 // ============================================================================
 // EP0 PMA allocation constants:
+//
 // Defines the maximum EP0 packet size and the PMA-local offsets of the BTABLE,
 // EP0 RX buffer, and EP0 TX buffer. The BTABLE occupies 8 bytes per endpoint 
 // for all 8 endpoints (64 bytes total), EP0 RX begins immediately after the 
@@ -83,6 +85,19 @@ enum class PMA_BLSIZE_t : u8 {
   Small_2Bytes  = 0,
   Large_32Bytes = 1
 };
+
+
+// ============================================================================
+// BTABLE_t
+//
+// Models the USB Buffer Descriptor Table (BTABLE) as eight endpoint descriptor
+// entries, with one BTABLE_entry_t for each endpoint. Each descriptor contains 
+// the PMA-local TX/RX buffer addresses and their corresponding buffer-size 
+// fields.
+// ============================================================================
+using BTABLE_t = std::array<BTABLE_entry_t, 8>;
+
+inline BTABLE_t& USB_BTABLE = *reinterpret_cast<BTABLE_t*>(0x40006000U);
 
 
 // ============================================================================

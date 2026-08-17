@@ -1,5 +1,24 @@
 #include "../include/usb.hpp"
+#include "../include/system.hpp"
 #include <cstddef>
+
+
+namespace {
+    void reset_endpoints() {
+        USB->BTABLE = 0;
+        
+        USB->EPnR[0].value = USB_EPnR_bits::EP_TYPE_CONTROL
+                           | USB_EPnR_bits::STAT_RX_VALID
+                           | USB_EPnR_bits::STAT_TX_NAK;
+        
+        USB_BTABLE[0].ADDR_RX.data  = EP0_RX_BUFFER_OFFSET;
+        USB_BTABLE[0].COUNT_RX.data = pma_count_rx_encode(EP0_MAX_PACKET_SIZE, PMA_BLSIZE_t::Large_32Bytes);
+        USB_BTABLE[0].ADDR_TX.data  = EP0_TX_BUFFER_OFFSET;
+        USB_BTABLE[0].COUNT_TX.data = 0;
+        USB->DADDR  = USB_DADDR_bits::EF;
+    }
+}
+
 
 // =================================================================
 // pma_write_word()
@@ -93,4 +112,22 @@ void ep_set_status( EP_Num_t ep_num, u16 new_stat_tx, u16 new_stat_rx ) {
                                                     | USB_EPnR_bits::CTR_TX
                                                     | toggle_rx
                                                     | toggle_tx;
+}
+
+
+// ===================================================================
+// usb_init()
+// ===================================================================
+void usb_init() {
+    RCC->APB1ENR |= RCC_APB1ENR_bits::USBEN;
+
+    USB->CNTR = USB_CNTR_bits::FRES;
+    delay_ms(1);
+
+    USB->CNTR = 0;
+    USB->ISTR = 0;
+
+    reset_endpoints();
+
+    USB->CNTR = USB_CNTR_bits::RESETM | USB_CNTR_bits::CTRM;
 }
