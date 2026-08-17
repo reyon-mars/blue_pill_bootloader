@@ -9,9 +9,23 @@
  *
  ***********************************************************/
 
+
 #pragma  once
 #include "stm32f103.hpp"
 #include <span>
+
+
+// ============================================================================
+// EP0 PMA allocation constants:
+// Defines the maximum EP0 packet size and the PMA-local offsets of the BTABLE,
+// EP0 RX buffer, and EP0 TX buffer. The BTABLE occupies 8 bytes per endpoint 
+// for all 8 endpoints (64 bytes total), EP0 RX begins immediately after the 
+// BTABLE, and the EP0 TX begins immediately after the 64-byte EP0 RX buffer.
+// ============================================================================
+constexpr u32 EP0_MAX_PACKET_SIZE   = 64;
+constexpr u32 BTABLE_LOCAL_SIZE     = ( 8 * 8 );
+constexpr u32 EP0_RX_BUFFER_OFFSET  = BTABLE_LOCAL_SIZE;
+constexpr u32 EP0_TX_BUFFER_OFFSET  = EP0_RX_BUFFER_OFFSET + EP0_MAX_PACKET_SIZE;
 
 
 // ============================================================================
@@ -139,6 +153,18 @@ void pma_write_words( u32 local_offset, std::span<const u16> src );
 // Avoid a blind read-modify-write.
 // ============================================================================
 void ep_set_status( EP_Num_t ep_num, u16 new_stat_tx, u16 new_stat_rx );
+
+
+// ============================================================================
+// Initializes the USB peripheral for device operation by powering up the USB
+// Analog Transceiver and the Digital SIE, configuring the PMA BTABLE and control
+// endpoint (EP0), and enabling the RESET and Correct Transfer (CTR) interrupt
+// sources.
+// NOTE: Call after clock_init(), because the USB peripheral depends on the 
+// APB1 register interface and the 48 MHz USB clock required by the SIE and 
+// analog transceiver.
+// ============================================================================
+void usb_init();
 
 
   /*--------------------------------------------------------------------------*/
