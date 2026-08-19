@@ -3,6 +3,16 @@
 #include <cstddef>
 
 
+// =================================================================
+// Global USB SETUP seen Flag
+// 
+// Records whether a valid SETUP packet has been received on endpoint
+// 0. Set upon receiving the first valid SETUP transaction and remains
+// true until explicitly cleared by firmware.
+// =================================================================
+volatile bool g_usb_setup_seen = false;
+
+
 namespace {
 
     // =================================================================
@@ -73,6 +83,31 @@ namespace {
         // request.
         // ───────────────────────────────────────────────────────────────
         USB->DADDR = USB_DADDR_bits::EF;
+    }
+
+
+    // =================================================================
+    // ep_clear_ctr_rx()
+    //
+    // Clears the EPnR CTR_RX (Correct-Transfer RX) flag while preserving
+    // the endpoint configuration and leaving all other hardware-controlled
+    // EPnR fields unchanged according to their write semantics.
+    // =================================================================
+    inline void ep_clear_ctr_rx( EP_Num_t ep_num ) {
+
+        // Read EPnR state exactly once.
+        const u16 read_state = USB->EPnR[ static_cast<size_t>(ep_num) ].value;
+        
+        // Preserve the ordinary read/write fields by copying their values
+        // from the read_state. These fields are not modified by this function.
+        const u16 preserved  = read_state & (  USB_EPnR_bits::EP_TYPE_MASK
+                                             | USB_EPnR_bits::EP_KIND
+                                             | USB_EPnR_bits::EA_MASK );
+        
+        // Write-1 to CTR_TX to preserve its status; leave CTR_RX as 0 to 
+        // clear it (rc_w0).
+        USB->EPnR[ static_cast<size_t>(ep_num) ].value = preserved
+                                                       | USB_EPnR_bits::CTR_TX;
     }
 }
 
