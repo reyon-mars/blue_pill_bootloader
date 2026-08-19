@@ -128,6 +128,10 @@ static_assert(sizeof(NVIC_t) == 3588, "NVIC_t size mismatch");
 
 inline NVIC_t* const NVIC = reinterpret_cast<NVIC_t*>(0xE000E100U);
 
+enum class IRQn : u16 {
+    IRQ_USB_LP_CAN_RX0 = 20
+};
+
 // NVIC helper functions
 namespace NVIC_helpers {
     // Only the UPPER 4 bits (MSBs) of each priority byte are used for priority levels
