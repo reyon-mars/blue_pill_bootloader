@@ -93,7 +93,7 @@ vector_table:
     .word DMA1_Channel4_IRQHandler  @ [30] IRQ14: DMA1 channel 4
     .word DMA1_Channel5_IRQHandler  @ [31] IRQ15: DMA1 channel 5
     .word DMA1_Channel6_IRQHandler  @ [32] IRQ16: DMA1 channel 6
-    .word DMA1_channel7_IRQHandler  @ [33] IRQ17: DMA1 channel 7
+    .word DMA1_Channel7_IRQHandler  @ [33] IRQ17: DMA1 channel 7
     .word ADC1_2_IRQHandler         @ [34] IRQ18: ADC1 and ADC2
     .word USB_HP_CAN_TX_IRQHandler  @ [35] IRQ19: USB High Priority / CAN TX
     .word USB_LP_CAN_RX0_IRQHandler @ [36] IRQ20: USB Low Priority 
@@ -136,10 +136,10 @@ vector_table:
 @ Thumb instruction set, force the linker to set the lowest address bit to 1
 .thumb_func
 
-@ Define the Reset_Handler lable and make it global (visible to external files)
+@ Define the Reset_Handler label and make it global (visible to external files)
 .global Reset_Handler
 
-@ Registers the lable as an executable function instead of a raw data 
+@ Registers the label as an executable function instead of a raw data 
 .type   Reset_Handler, %function
 
 Reset_Handler:
@@ -182,7 +182,7 @@ Reset_Handler:
     bhs     .L_data_copy_done   @ If so, we're done ( bhs: branch if higher or same )
     ldr     r3, [r0], #4        @ Load 4 bytes from flash, advance source by 4
     str     r3, [r1], #4        @ Store 4 bytes to SRAM, advance dest by 4
-    b       .L_data_copy        @ Branch to the .L_data_copy lable again
+    b       .L_data_copy        @ Branch to the .L_data_copy label again
 .L_data_copy_done:
 
     @ ─────────────────────────────────────────────────────────────
@@ -258,7 +258,7 @@ Reset_Handler:
     @ ─────────────────────────────────────────────────────────────
     @ The assembler directive .size Reset_Handler, . - Reset_Handler
     @ calculates the total footprint of the function in bytes by 
-    @ substracting its starting address from the current location 
+    @ subtracting its starting address from the current location 
     @ pointer (.) at the end of the code block. This metadata is placed
     @ directly into the .elf object file on the PC to help the debugging 
     @ tools map out function boundaries.
@@ -381,8 +381,8 @@ Default_Handler:
 .weak       DMA1_Channel6_IRQHandler
 .thumb_set  DMA1_Channel6_IRQHandler, Default_Handler
 
-.weak       DMA1_channel7_IRQHandler
-.thumb_set  DMA1_channel7_IRQHandler, Default_Handler
+.weak       DMA1_Channel7_IRQHandler
+.thumb_set  DMA1_Channel7_IRQHandler, Default_Handler
 
 .weak       ADC1_2_IRQHandler
 .thumb_set  ADC1_2_IRQHandler, Default_Handler
@@ -448,7 +448,7 @@ Default_Handler:
 .thumb_set  USART2_IRQHandler, Default_Handler
 
 .weak       USART3_IRQHandler
-.thumb_set  USART2_IRQHandler, Default_Handler
+.thumb_set  USART3_IRQHandler, Default_Handler
 
 .weak       EXTI15_10_IRQHandler
 .thumb_set  EXTI15_10_IRQHandler, Default_Handler
