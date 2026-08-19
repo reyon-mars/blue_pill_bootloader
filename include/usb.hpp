@@ -17,6 +17,16 @@
 
 
 // ============================================================================
+// Global USB SETUP Seen
+//
+// This flag is set when the first valid SETUP packet is received on endpoint 0.
+// It remains set until explicitly cleared by firmware, allowing software to 
+// record that EP0 has received SETUP traffic.
+// ============================================================================
+extern volatile bool g_usb_setup_seen;
+
+
+// ============================================================================
 // EP0 PMA allocation constants:
 //
 // Defines the maximum EP0 packet size and the PMA-local offsets of the BTABLE,
