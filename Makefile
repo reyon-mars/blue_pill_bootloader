@@ -1,5 +1,5 @@
 # =================================================================
-# Makefile - STM324103 Bootloader Build System
+# Makefile - STM32F103 Bootloader Build System
 #
 # Target: arm-none-eabi toolchain (bare metal, no OS, no libc)
 # -none-eabi:
@@ -25,7 +25,7 @@ ARCH_FLAGS = -mcpu=cortex-m3 -mthumb -mfloat-abi=soft
 
 # ------------------------------------------------------------------
 # C++ Flags:
-#	-std=c++17			: Enable C++17 features 
+#	-std=c++20			: Enable C++20 features 
 #	-fno-exceptions		: Disable C++ exceptions (saves ~4KB of unwinding code)
 #						  Exceptions require heap allocation and RTTI - both
 #						  undesirable in a bare-metal bootloader
@@ -130,31 +130,34 @@ DEBUG_ASM	= $(CXX_SRCS:$(SRCDIR)/%.cpp=$(DEBUGDIR)/%.as)
 all: $(OBJDIR)/$(TARGET).bin debug_artifacts
 
 $(OBJDIR):
-	mkdir -p $(OBJDIR)
+	@mkdir -p $(OBJDIR)
 
 $(DEBUGDIR):
-	mkdir -p $(DEBUGDIR)
+	@mkdir -p $(DEBUGDIR)
 
 
 # ------------------------------------------------------------------
 # Assemble .s files
 # ------------------------------------------------------------------
 $(OBJDIR)/%.o: $(SRCDIR)/%.s | $(OBJDIR)
-	$(AS) $(ASFLAGS) -c $< -o $@
+	@echo "  [AS]    $<"
+	@$(AS) $(ASFLAGS) -c $< -o $@
 
 
 # ------------------------------------------------------------------
 # Compile .cpp files and generate mixed code listings
 # ------------------------------------------------------------------
 $(OBJDIR)/%.o: $(SRCDIR)/%.cpp | $(OBJDIR) $(DEBUGDIR)
-	$(CXX) $(CXXFLAGS) -Wa,-adhln=$(DEBUGDIR)/$*.lst -c $< -o $@
+	@echo "  [CXX]    $<"
+	@$(CXX) $(CXXFLAGS) -Wa,-adhln=$(DEBUGDIR)/$*.lst -c $< -o $@
 
 
 # ------------------------------------------------------------------
 # Generate clean, annotated assembly files
 # ------------------------------------------------------------------
 $(DEBUGDIR)/%.as: $(SRCDIR)/%.cpp | $(DEBUGDIR)
-	$(CXX) $(CXXFLAGS) -S -fverbose-asm $< -o $@
+	@echo "  [ASM]    Generating assembly -> $@"
+	@$(CXX) $(CXXFLAGS) -S -fverbose-asm $< -o $@
 
 
 # ------------------------------------------------------------------
@@ -168,8 +171,12 @@ $(DEBUGDIR)/%.su: $(OBJDIR)/%.o | $(DEBUGDIR)
 # Link all objects into ELF
 # ------------------------------------------------------------------
 $(OBJDIR)/$(TARGET).elf: $(ALL_OBJS)
-	$(CXX) $(CXXFLAGS) $(LDFLAGS) $^ -o $@
-	$(SIZE) $@
+	@echo ""
+	@echo "  [LD]    Linking objects -> $@"
+	@$(CXX) $(CXXFLAGS) $(LDFLAGS) $^ -o $@
+	@echo ""
+	@echo "  [SIZE]    Section Overview:"
+	@$(SIZE) $@
 	
 
 # ------------------------------------------------------------------
@@ -178,36 +185,44 @@ $(OBJDIR)/$(TARGET).elf: $(ALL_OBJS)
 #	-S			: don't copy relocation info and symbol table
 # ------------------------------------------------------------------
 $(OBJDIR)/$(TARGET).bin: $(OBJDIR)/$(TARGET).elf
-	$(OBJCOPY) -O binary -S $< $@
+	@echo ""
+	@echo "  [OBJCOPY]    Creating raw binary -> $@"
+	@$(OBJCOPY) -O binary -S $< $@
 
 
 # ------------------------------------------------------------------
 # Also produce .HEX for tools that prefer it
 # ------------------------------------------------------------------
 $(OBJDIR)/$(TARGET).hex: $(OBJDIR)/$(TARGET).elf
-	$(OBJCOPY) -O ihex $< $@
+	@echo "  [OBJCOPY]    Creating HEX image -> $@"
+	@$(OBJCOPY) -O ihex $< $@
 
 
 # ------------------------------------------------------------------
 # Debug Collection
 # ------------------------------------------------------------------
 debug_artifacts: $(DEBUG_LST) $(DEBUG_ASM) $(DEBUG_SU)
-	@echo "All debug files successfully generated in /$(DEBUGDIR)"
-
+	@echo ""
+	@echo "**************************************************************"
+	@echo "  All debug files successfully generated in /$(DEBUGDIR)"
+	@echo "**************************************************************"
 
 # ------------------------------------------------------------------
 # Clean
 # ------------------------------------------------------------------
 clean:
-	rm -rf $(OBJDIR)
-	mkdir -p $(OBJDIR) $(DEBUGDIR)
+	@echo "  [CLEAN]    Removing build artifacts..."
+	@rm -rf $(OBJDIR)
+	@mkdir -p $(OBJDIR) $(DEBUGDIR)
 
 
 # ------------------------------------------------------------------
 # FLASH
 # ------------------------------------------------------------------
 flash: $(OBJDIR)/$(TARGET).bin
-	openocd -f interface/cmsis-dap.cfg -f target/stm32f1x.cfg \
+	@echo ""
+	@echo "  [FLASH]    Flashing target board..."
+	@openocd -f interface/cmsis-dap.cfg -f target/stm32f1x.cfg \
 	-c "program $(OBJDIR)/$(TARGET).bin verify reset exit 0x08000000"
 
 .PHONY: all clean flash debug_artifacts
