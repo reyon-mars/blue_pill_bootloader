@@ -4,18 +4,75 @@
 
 
 namespace {
-    void reset_endpoints() {
+
+    // =================================================================
+    // reset_endpoints()
+    // 
+    // Initializes the USB Buffer Table, EP0 endpoint state, and USB
+    // device address after power-up or a USB bus reset. The BTABLE
+    // is placed at PMA-local offset 0, EP0 is configured as a control
+    // endpoint, its RX and TX PMA buffers are described in the BTABLE,
+    // and the device is finally enabled with USB address 0.
+    // The BTABLE and EP0 must be fully configured before DADDR.EF is 
+    // set. This keeps the USB peripheral from being enabled until the 
+    // endpoint configuration and its PMA buffer descriptors have been
+    // established.
+    // =================================================================
+    inline void reset_endpoints() {
+
+        // ───────────────────────────────────────────────────────────────
+        // Set the BTABLE base to PMA-local offset 0. The USB peripheral
+        // interprets BTABLE using its PMA-local addressing convention,
+        // so endpoint 0's descriptor begins at the start of the PMA.
+        // ───────────────────────────────────────────────────────────────
         USB->BTABLE = 0;
-        
+
+        // ───────────────────────────────────────────────────────────────
+        // Initializes EP0 as a control endpoint. RX is made VALID so the 
+        // SIE can accept an incoming control packet, while TX is initially
+        // NAK so the SIE does not transmit until firmware has prepared
+        // data.
+        // ───────────────────────────────────────────────────────────────
         USB->EPnR[0].value = USB_EPnR_bits::EP_TYPE_CONTROL
                            | USB_EPnR_bits::STAT_RX_VALID
                            | USB_EPnR_bits::STAT_TX_NAK;
-        
-        USB_BTABLE[0].ADDR_RX.data  = EP0_RX_BUFFER_OFFSET;
-        USB_BTABLE[0].COUNT_RX.data = pma_count_rx_encode(EP0_MAX_PACKET_SIZE, PMA_BLSIZE_t::Large_32Bytes);
-        USB_BTABLE[0].ADDR_TX.data  = EP0_TX_BUFFER_OFFSET;
+
+        // ───────────────────────────────────────────────────────────────
+        // Set the PMA-local starting offset of the EP0 RX buffer in its
+        // BTABLE descriptor. This is a PMA-local offset, not CPU address.
+        // ───────────────────────────────────────────────────────────────
+        USB_BTABLE[0].ADDR_RX.data = EP0_RX_BUFFER_OFFSET;
+
+        // ───────────────────────────────────────────────────────────────
+        // Describe the maximum capacity of the EP0 RX buffer using the 
+        // hardware-defined COUNT_RX encoding. EP0 has a 64-byte RX buffer,
+        // allocated using the 32-byte block encoding.
+        // ───────────────────────────────────────────────────────────────
+        USB_BTABLE[0].COUNT_RX.data = pma_count_rx_encode(
+                                            EP0_MAX_PACKET_SIZE,
+                                            PMA_BLSIZE_t::Large_32Bytes
+                                        );
+
+        // ───────────────────────────────────────────────────────────────
+        // Set the PMA-local starting offset of the EP0 TX buffer. The TX
+        // buffer is located immediately after the EP0 RX buffer in PMA.
+        // ───────────────────────────────────────────────────────────────
+        USB_BTABLE[0].ADDR_TX.data = EP0_TX_BUFFER_OFFSET;
+
+        // ───────────────────────────────────────────────────────────────
+        // EP0 has no transmit data prepared at initialization. COUNT_TX
+        // is cleared to zero; firmware sets it when an EP0 IN transfer has
+        // been prepared for transmission.
+        // ───────────────────────────────────────────────────────────────
         USB_BTABLE[0].COUNT_TX.data = 0;
-        USB->DADDR  = USB_DADDR_bits::EF;
+
+        // ───────────────────────────────────────────────────────────────
+        // Enable the USB device by setting DADDR.EF. The ADDR field 
+        // remains zero, which is the USB device's initial address before 
+        // the host assigns a new address through the SET_ADDRESS control
+        // request.
+        // ───────────────────────────────────────────────────────────────
+        USB->DADDR = USB_DADDR_bits::EF;
     }
 }
 
@@ -115,19 +172,88 @@ void ep_set_status( EP_Num_t ep_num, u16 new_stat_tx, u16 new_stat_rx ) {
 }
 
 
-// ===================================================================
+// =========================================================================
 // usb_init()
-// ===================================================================
+//
+// Initializes the USB peripheral from a known reset state to an operational
+// state. The sequence first enables the USB peripheral clock, then forces 
+// the USB digital Serial Interface Engine (SIE) into reset so that its 
+// internal state machines and endpoint state can be brought to a known 
+// state. After a short delay, the forced reset is released and any stale USB
+// interrupt status is cleared. The endpoint registers are then initialized 
+// to their required initial configuration. Finally, the USB RESET and Correct
+// Transfer (CTR) interrupt sources are enabled so that subsequent bus reset
+// and endpoint-transfer events can be reported to the CPU.
+// =========================================================================
 void usb_init() {
+    // ───────────────────────────────────────────────────────────────
+    // STEP 1: Enable the USB peripheral clock.
+    // 
+    // USBEN controls the clock supplied to the USB peripheral through
+    // the APB1 peripheral clock domain. Until this clock is enabled,
+    // the USB register interface and the peripheral's internal logic
+    // cannot be operated normally.
+    //
+    // This write needs to occur before accessing the USB peripheral's
+    // control or status register.
+    // ───────────────────────────────────────────────────────────────
     RCC->APB1ENR |= RCC_APB1ENR_bits::USBEN;
 
+    // ───────────────────────────────────────────────────────────────
+    // STEP 2: Power the Analog Transceiver; hold digital SIE in reset.
+    //
+    // Power-on default of CNTR is 0x0003 (PDWN=1, FRES=1).
+    // Writing CNTR = FRES (0x0001) clears PDWN to power up the analog
+    // Transceiver, while asserting reset on the Digital SIE.
+    // ───────────────────────────────────────────────────────────────
     USB->CNTR = USB_CNTR_bits::FRES;
-    delay_ms(1);
 
+    // ───────────────────────────────────────────────────────────────
+    // STEP 3: Propagate reset and await analog stabilization.
+    // 
+    // The delay gives the analog Transceiver power rail time to 
+    // stabilize and for the digital SIE state logic to fully settle
+    // in the forced-reset state before software releases reset and 
+    // continues initialization.
+    // ───────────────────────────────────────────────────────────────
+    delay_ms( 1 );
+
+    // ───────────────────────────────────────────────────────────────
+    // STEP 4: Release the digital SIE from forced reset.
+    //
+    // Writing CNTR = 0 clears FRES (releasing the SIE) while keeping
+    // PDWN = 0 (transceiver powered on). All interrupt masks remain 
+    // disabled at this stage so the CPU won't handle IRQs during 
+    // setup.
+    // ───────────────────────────────────────────────────────────────
     USB->CNTR = 0;
+
+    // ───────────────────────────────────────────────────────────────
+    // STEP 5: Clear all pending interrupt status flags.
+    //
+    // USB_ISTR flags are rc_w0 bits set autonomously by the hardware.
+    // Writing 0 clears all pending flags accumulated during power-up
+    // or transceiver startup, ensuring a clean state before active
+    // operation.
+    // ───────────────────────────────────────────────────────────────
     USB->ISTR = 0;
 
+    // ───────────────────────────────────────────────────────────────
+    // STEP 6: Configure BTABLE offsets and Endpoint layout.
+    //
+    // Calls reset_endpoints() to assign BTABLE at offset 0, set up
+    // EP0 RX/TX descriptors in PMA SRAM, set EP0 as CONTROL with 
+    // STAT_RX_VALID / STAT_TX_NAK, and enable the device.
+    // ───────────────────────────────────────────────────────────────
     reset_endpoints();
 
+    // ───────────────────────────────────────────────────────────────
+    // STEP 7: Enable USB RESET and Correct Transfer (CTR) interrupts
+    //
+    // Unmasks core USB interrupt sources by setting RESETM and CTRM
+    // in CNTR. This enables host-driven bus reset detection and
+    // endpoint transfer completion events to escalate into CPU NVIC
+    // interrupts.
+    // ───────────────────────────────────────────────────────────────
     USB->CNTR = USB_CNTR_bits::RESETM | USB_CNTR_bits::CTRM;
 }
