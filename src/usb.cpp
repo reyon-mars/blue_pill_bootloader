@@ -113,6 +113,33 @@ namespace {
 
 
 // =================================================================
+// USB_LP_CAN_RX0_IRQHandler()
+// =================================================================
+extern "C" void USB_LP_CAN_RX0_IRQHandler() {
+
+    const u16 istr = USB->ISTR;
+
+    if( istr & USB_ISTR_bits::RESET ) {
+
+        reset_endpoints();
+        USB->ISTR = ~(USB_ISTR_bits::RESET);
+        return;
+    }
+
+    if( istr & USB_ISTR_bits::CTR ) {
+        const u16 ep_id = istr & USB_ISTR_bits::EP_ID_MASK;
+        if( ep_id == 0 ) {
+            if( USB->EPnR[0].value & USB_EPnR_bits::SETUP )
+            {
+                g_usb_setup_seen = true;
+            }
+            ep_clear_ctr_rx(EP_Num_t::EP0);
+        }
+    }
+}
+
+
+// =================================================================
 // pma_write_word()
 //
 // Writes 16-bit to the USB Packet Memory Area at local_offset.
@@ -283,7 +310,7 @@ void usb_init() {
     reset_endpoints();
 
     // ───────────────────────────────────────────────────────────────
-    // STEP 7: Enable USB RESET and Correct Transfer (CTR) interrupts
+    // STEP 7: Enable USB RESET and Correct Transfer (CTR) interrupts.
     //
     // Unmasks core USB interrupt sources by setting RESETM and CTRM
     // in CNTR. This enables host-driven bus reset detection and
@@ -291,4 +318,17 @@ void usb_init() {
     // interrupts.
     // ───────────────────────────────────────────────────────────────
     USB->CNTR = USB_CNTR_bits::RESETM | USB_CNTR_bits::CTRM;
+
+    // ───────────────────────────────────────────────────────────────
+    // STEP 8: Enable the USB interrupt line in the NVIC.
+    //
+    // USB->CNTR enables the USB peripheral to generate interrupt
+    // requests, but those requests cannot reach the CPU until the 
+    // corresponding interrupt channel is also enabled in the NVIC.
+    // This is done last so the complete USB interrupt configuration 
+    // is already valid before the CPU can service an interrupt.
+    // ───────────────────────────────────────────────────────────────
+    NVIC_helpers::enable_irq(
+        static_cast<int>(IRQn::USB_LP_CAN_RX0)
+    );
 }
