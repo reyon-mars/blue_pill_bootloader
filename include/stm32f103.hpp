@@ -20,6 +20,10 @@ using u8    = uint8_t;
 using u16   = uint16_t;
 using u32   = uint32_t;
 
+using i8    = int8_t; 
+using i16   = int16_t;
+using i32   = int32_t;
+
 /*-----------------------------------------------------------*
  *  Aliases For Hardware Registers                           *
  *-----------------------------------------------------------*/
@@ -128,11 +132,19 @@ static_assert(sizeof(NVIC_t) == 3588, "NVIC_t size mismatch");
 
 inline NVIC_t* const NVIC = reinterpret_cast<NVIC_t*>(0xE000E100U);
 
-enum class IRQn : u16 {
-    IRQ_USB_LP_CAN_RX0 = 20
+// ============================================================================
+// STM32F103 Peripheral Interrupt Vector Numbers (NVIC)
+//
+// These values map hardware peripheral interrupt sources directly to their
+// corresponding NVIC IRQ numbers on the STM32F103.
+// ============================================================================
+enum class IRQn : i8 {
+    USB_LP_CAN_RX0 = 20
 };
 
+// ============================================================================
 // NVIC helper functions
+// ============================================================================
 namespace NVIC_helpers {
     // Only the UPPER 4 bits (MSBs) of each priority byte are used for priority levels
     constexpr u8 PRIO_BITS = 4;
