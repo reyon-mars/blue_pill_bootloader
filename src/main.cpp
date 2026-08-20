@@ -2,37 +2,26 @@
 #include "../include/system.hpp"
 #include "../include/usb.hpp"
 
-[[maybe_unused]]static void delay( vu32& count )
-{
-    while( count ){
-        count = count - 1;
-        // Empty. The compiler might optimize this away, so make count a volatile.       
-    }
-}
 
-int main()
-{
+
+int main() {
     clock_init();
     systick_init();
+    usb_init();
 
     RCC->APB2ENR |= RCC_APB2ENR_bits::IOPCEN;
-    
-    constexpr u32 PC13_CONFIG_SHIFT = ( 13 - 8 ) * 4;
-    constexpr u32 PC13_CLEAR_MASK   = ~( 0xFU << PC13_CONFIG_SHIFT );
-    constexpr u32 PC13_OUTPUT_50MHZ = ( 0b0011 << PC13_CONFIG_SHIFT );
-    
-    GPIOC->CRH = ( GPIOC->CRH & PC13_CLEAR_MASK ) | PC13_OUTPUT_50MHZ;
-    
-    constexpr u32 PC13_SET = ( 1U << 13 );
-    constexpr u32 PC13_RESET = (1U << ( 16 + 13 ));
+    constexpr u32 PIN13_SHIFT = (13 - 8) * 4;
+    GPIOC->CRH = (GPIOC->CRH & ~(0xFU << PIN13_SHIFT)) | (0x3U << PIN13_SHIFT);
 
-    while( true ){
-        GPIOC->BSRR = PC13_RESET;
-        delay_ms( 500 );
-        GPIOC->BSRR = PC13_SET;
-        delay_ms(500 );
+    constexpr u32 PC13_LOW  = (1U << (13 + 16));  // LED on
+    constexpr u32 PC13_HIGH = (1U << 13);          // LED off
+
+    while (true) {
+        if (g_usb_setup_seen) {
+            GPIOC->BSRR = PC13_LOW;      // solid ON: first SETUP arrived
+        } else {
+            GPIOC->BSRR = PC13_LOW;  delay_ms(100);
+            GPIOC->BSRR = PC13_HIGH; delay_ms(100);  // fast blink: still waiting
+        }
     }
-
-    pma_count_rx_encode(23, PMA_BLSIZE_t::Large_32Bytes);
-    return 0;
 }
