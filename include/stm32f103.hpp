@@ -459,57 +459,57 @@ namespace USB_EPnR_bits {
     // Bits [3:0] EA: Endpoint Address (rw)
     // Assigned by software during initialization (0 to 15). Associates
     // this hardware EPnR register with a logical USB endpoint address.
-    constexpr u32 EA_MASK           = ( 0xFU << 0 );
+    constexpr u16 EA_MASK           = ( 0xFU << 0 );
     // Bits [5:4] STAT_TX: Mask for transmit status (toggle)
     //  -> 00 : DISABLED
     //  -> 01 : STALL
     //  -> 10 : NAK
     //  -> 11 : VALID
-    constexpr u32 STAT_TX_MASK      = ( 0x3U << 4 );
-    constexpr u32 STAT_TX_DISABLED  = ( 0x0U << 4 );
-    constexpr u32 STAT_TX_STALL     = ( 0x1U << 4 );
-    constexpr u32 STAT_TX_NAK       = ( 0x2U << 4 );
-    constexpr u32 STAT_TX_VALID     = ( 0x3U << 4 );
+    constexpr u16 STAT_TX_MASK      = ( 0x3U << 4 );
+    constexpr u16 STAT_TX_DISABLED  = ( 0x0U << 4 );
+    constexpr u16 STAT_TX_STALL     = ( 0x1U << 4 );
+    constexpr u16 STAT_TX_NAK       = ( 0x2U << 4 );
+    constexpr u16 STAT_TX_VALID     = ( 0x3U << 4 );
     // Bit 6 DTOG_TX: Transmit data toggle bit (DATA0 <-> DATA1) (toggle)
     // Flips automatically on every successful IN transaction.
-    constexpr u32 DTOG_TX           = ( 0x1U << 6 );
+    constexpr u16 DTOG_TX           = ( 0x1U << 6 );
     // Bit 7 CTR_TX: Correct Transfer Transmit (IN Token Complete)
     // Hardware sets to 1 when an IN packet is successfully sent to the host.
-    constexpr u32 CTR_TX            = ( 0x1U << 7 );
+    constexpr u16 CTR_TX            = ( 0x1U << 7 );
 
     // Bit 8 EP_KIND: Endpoint Kind / Double Buffer Feature
     // Behaviour depends on EP_TYPE:
     //  -> BULK     : 1 enables Double Buffering mode.
     //  -> CONTROL  : 1 enables Status Out handling (STATUS_OUT)
-    constexpr u32 EP_KIND           = ( 0x1U << 8 );
+    constexpr u16 EP_KIND           = ( 0x1U << 8 );
     // Bits [10:9] EP_TYPE: Mask and encoding for USB transfer mechanism
-    constexpr u32 EP_TYPE_MASK      = ( 0x3U << 9 );
-    constexpr u32 EP_TYPE_BULK      = ( 0x0U << 9 );    // Bulk endpoint
-    constexpr u32 EP_TYPE_CONTROL   = ( 0x1U << 9 );    // Control endpoint (Default for EP0)
-    constexpr u32 EP_TYPE_ISO       = ( 0x2U << 9 );    // Isochronous endpoint
-    constexpr u32 EP_TYPE_INTERRUPT = ( 0x3U << 9 );    // Interrupt endpoint
+    constexpr u16 EP_TYPE_MASK      = ( 0x3U << 9 );
+    constexpr u16 EP_TYPE_BULK      = ( 0x0U << 9 );    // Bulk endpoint
+    constexpr u16 EP_TYPE_CONTROL   = ( 0x1U << 9 );    // Control endpoint (Default for EP0)
+    constexpr u16 EP_TYPE_ISO       = ( 0x2U << 9 );    // Isochronous endpoint
+    constexpr u16 EP_TYPE_INTERRUPT = ( 0x3U << 9 );    // Interrupt endpoint
     // Bit 11 SETUP: Setup Packet Received Flag (ro)
     // Hardware sets to 1 when a valid SETUP packet is received on a 
     // Control endpoint. Read-Only.
-    constexpr u32 SETUP             = ( 0x1U << 11 );
+    constexpr u16 SETUP             = ( 0x1U << 11 );
     // Bits [13:12] STAT_RX: Mask for receive status (toggle)
     //  -> 00 : DISABLED
     //  -> 01 : STALL
     //  -> 10 : NAK
     //  -> 11 : VALID
-    constexpr u32 STAT_RX_MASK      = ( 0x3U << 12 );
-    constexpr u32 STAT_RX_DISABLED  = ( 0x0U << 12 );
-    constexpr u32 STAT_RX_STALL     = ( 0x1U << 12 );
-    constexpr u32 STAT_RX_NAK       = ( 0x2U << 12 );
-    constexpr u32 STAT_RX_VALID     = ( 0x3U << 12 );
+    constexpr u16 STAT_RX_MASK      = ( 0x3U << 12 );
+    constexpr u16 STAT_RX_DISABLED  = ( 0x0U << 12 );
+    constexpr u16 STAT_RX_STALL     = ( 0x1U << 12 );
+    constexpr u16 STAT_RX_NAK       = ( 0x2U << 12 );
+    constexpr u16 STAT_RX_VALID     = ( 0x3U << 12 );
     // Bit 14 DTOG_RX: Data Toggle for Receive (OUT Direction)
     // Hardware toggles this on every successful OUT transaction (DATA0 <-> DATA1).
-    constexpr u32 DTOG_RX           = ( 0x1U << 14 );
+    constexpr u16 DTOG_RX           = ( 0x1U << 14 );
     // Bit 15 CTR_RX: Correct Transfer Receive (OUT/SETUP Token Complete)
     // Hardware sets to 1 when an OUT or SETUP packet is successfully received.
-    constexpr u32 CTR_RX            = ( 0x1U << 15 );
+    constexpr u16 CTR_RX            = ( 0x1U << 15 );
     // Mask containing all toggle-on-write bits in EPnR.
-    constexpr u32 TOGGLE_BITS       = ( DTOG_TX | DTOG_RX | STAT_TX_MASK | STAT_RX_MASK );
+    constexpr u16 TOGGLE_BITS       = ( DTOG_TX | DTOG_RX | STAT_TX_MASK | STAT_RX_MASK );
 }
 
 namespace USB_CNTR_bits {
@@ -517,58 +517,58 @@ namespace USB_CNTR_bits {
     // These bits control the operational state. Purely software owned,
     // nothing here is ever changed by the SIE on its own. Ordinary
     // register writes are safe; no invariant-write needed, unlike EPnR.
-    constexpr u32 FRES      = ( 1U << 0 );      // Force digital SIE into reset.
-    constexpr u32 PDWN      = ( 1U << 1 );      // Power Down ANALOG TRANSCEIVER.
-    constexpr u32 LP_MODE   = ( 1U << 2 );      // Enable USB low-power mode.
-    constexpr u32 FSUSP     = ( 1U << 3 );      // Force the USB peripheral into suspend.
-    constexpr u32 RESUME    = ( 1U << 4 );      // Initiates a USB resume sequence.
+    constexpr u16 FRES      = ( 1U << 0 );      // Force digital SIE into reset.
+    constexpr u16 PDWN      = ( 1U << 1 );      // Power Down ANALOG TRANSCEIVER.
+    constexpr u16 LP_MODE   = ( 1U << 2 );      // Enable USB low-power mode.
+    constexpr u16 FSUSP     = ( 1U << 3 );      // Force the USB peripheral into suspend.
+    constexpr u16 RESUME    = ( 1U << 4 );      // Initiates a USB resume sequence.
     // Bits [15:8] - USB Interrupt Mask Bits
     // Interrupt masks. Setting one of these does not create an
     // underlying event; it only decides whether that event, once it happens,
     // is allowed to escalate into an actual NVIC interrupt. The matching
     // status flag in ISTR still becomes true even if its mask bit here is 0.
-    constexpr u32 ESOFM     = ( 1U << 8 );      // Enable interrupt on expected-SOF error.
-    constexpr u32 SOFM      = ( 1U << 9 );      // Enable interrupt on Start-of-Frame.
-    constexpr u32 RESETM    = ( 1U << 10 );     // Enable interrupt on USB reset detection.
-    constexpr u32 SUSPM     = ( 1U << 11 );     // Enable interrupt on USB suspend detection.
-    constexpr u32 WKUPM     = ( 1U << 12 );     // Enable interrupt on USB wakeup detection.
-    constexpr u32 ERRM      = ( 1U << 13 );     // Enable interrupt on USB error detection.
-    constexpr u32 PMAOVRM   = ( 1U << 14 );     // Enable interrupt on PMA overrun detection.
-    constexpr u32 CTRM      = ( 1U << 15 );     // Enable interrupt on correct transfer.
+    constexpr u16 ESOFM     = ( 1U << 8 );      // Enable interrupt on expected-SOF error.
+    constexpr u16 SOFM      = ( 1U << 9 );      // Enable interrupt on Start-of-Frame.
+    constexpr u16 RESETM    = ( 1U << 10 );     // Enable interrupt on USB reset detection.
+    constexpr u16 SUSPM     = ( 1U << 11 );     // Enable interrupt on USB suspend detection.
+    constexpr u16 WKUPM     = ( 1U << 12 );     // Enable interrupt on USB wakeup detection.
+    constexpr u16 ERRM      = ( 1U << 13 );     // Enable interrupt on USB error detection.
+    constexpr u16 PMAOVRM   = ( 1U << 14 );     // Enable interrupt on PMA overrun detection.
+    constexpr u16 CTRM      = ( 1U << 15 );     // Enable interrupt on correct transfer.
 }
 
 namespace USB_ISTR_bits {
     // Bits [4:0] - Transaction Metadata (ro) 
     // EP_ID/DIR are metadata attached to CTR specifically; they only
     // mean something in the same instant CTR is set.
-    constexpr u32 EP_ID_MASK    = 0xFU;         // Endpoint number associated with the CTR.
-    constexpr u32 DIR           = ( 1U << 4 );  // Transfer direction associated with CTR.
+    constexpr u16 EP_ID_MASK    = 0xFU;         // Endpoint number associated with the CTR.
+    constexpr u16 DIR           = ( 1U << 4 );  // Transfer direction associated with CTR.
     // Bits [14:8] - Bus Event & Interrupt Status Flags (rc_w0)
     // rc_w0: hardware sets these autonomously on the matching bus event;
     // firmware clears one by writing 0 to it; 1 leaves it untouched.
-    constexpr u32 ESOF          = ( 1U << 8 );  // Expected Start-of-Frame error detected.
-    constexpr u32 SOF           = ( 1U << 9 );  // Start-of-Frame event detected.
-    constexpr u32 RESET         = ( 1U << 10 ); // USB Reset sequence detected.
-    constexpr u32 SUSP          = ( 1U << 11 ); // USB Suspend condition detected.
-    constexpr u32 WKUP          = ( 1U << 12 ); // USB Wakeup event detected.
-    constexpr u32 ERR           = ( 1U << 13 ); // USB error detected.
-    constexpr u32 PMAOVR        = ( 1U << 14 ); // Packet Memory Area overrun detected.
+    constexpr u16 ESOF          = ( 1U << 8 );  // Expected Start-of-Frame error detected.
+    constexpr u16 SOF           = ( 1U << 9 );  // Start-of-Frame event detected.
+    constexpr u16 RESET         = ( 1U << 10 ); // USB Reset sequence detected.
+    constexpr u16 SUSP          = ( 1U << 11 ); // USB Suspend condition detected.
+    constexpr u16 WKUP          = ( 1U << 12 ); // USB Wakeup event detected.
+    constexpr u16 ERR           = ( 1U << 13 ); // USB error detected.
+    constexpr u16 PMAOVR        = ( 1U << 14 ); // Packet Memory Area overrun detected.
     // Bit 15 - Correct Transfer Flag
     // Read-Only. Not an independent flag. This bit is the live logical OR
     // of every EPnR[n].CTR_RX / CTR_TX across all 8 endpoints. Cannot
     // be cleared by writing ISTR at all; goes low on its own only once
     // every underlying EPnR completion bit has been cleared.
-    constexpr u32 CTR           = ( 1U << 15 ); // At least one endpoint has a correct transfer.
+    constexpr u16 CTR           = ( 1U << 15 ); // At least one endpoint has a correct transfer.
 }
 
 namespace USB_DADDR_bits {
     // Bits [6:0] ADD: Device Address
     // 7-bit USB device address assigned by the host during enumeration.
-    constexpr u32 ADDR_MASK = 0x7FU;
+    constexpr u16 ADDR_MASK = 0x7FU;
     // Bit 7 EF: Enable Function
     // When clear (0), the USB macro is disabled and does not respond to any bus
     // activity regardless of ADD's value.
-    constexpr u32 EF        = ( 1U << 7 );
+    constexpr u16 EF        = ( 1U << 7 );
 }
 
 
