@@ -180,6 +180,81 @@ USB peripheral -> interrupt request -> NVIC -> vector table -> USB_LP_CAN_RX0_IR
 
 6. Determining Which USB Event caused the Interrupt
 
+The first statement in the ISR captured the USB interrupt status register:
+
+const u16 istr = USB->ISTR;
+
+The USB interrupt-status register is located at:
+
+-> 0x40005C44
+
+The RESET bit was defined as:
+
+constexpr u16 RESET = ( 1U << 10 );
+
+Therefore:
+
+RESET   = bit 10
+        = 0x0400
+
+During debugging, the value of istr was inspected with:
+
+-> print istr
+
+and: 
+
+-> print/x istr
+
+Values such as:
+
+8192 and 0x1F00 
+
+were observed during different USB events.
+More importantly, the individual event flags were tested directly:
+
+-> print( istr & USB_ISTR_bits::RESET )
+
+which returned :
+
+-> 1024 or 0x0400
+
+This proved that:
+
+ISTR.RESET = 1
+
+At the same time:
+
+-> print( istr & USB_ISTR_bits::CTR )
+
+returned:
+
+0
+
+Therefore, for the interrupt invocation under investigation:
+
+    RESET  = 1
+    CTR    = 0
+
+The ISR was consequently entering the RESET-handling path rather than the normal
+control-transfer(CTR) path.
+
+This was a major narrowing of the problem.
+
+
+────────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+7. The RESET Handler Under Investigation
+
+The relevant code was:
+
+if( istr & USB_ISTR_bits::RESET ) {
+    
+    reset_endpoints();
+    USB->ISTR = ~(USB_ISTR_bits::RESET);
+    return;
+}
+
 
 
 
