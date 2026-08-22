@@ -108,3 +108,78 @@ initialization/enumeraiton path failing. The investigation there had to proceed 
 physical USB behaviour down through the interrupt system, USB status registers, endpoint
 configuration, PMA configuration, and finally the ordering of operatios in the RESET
 Handler.
+
+
+────────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+4. Establishing That the Firmware was Executing
+
+The first question was whether the firmware itself was running correctly. The device
+was running the bootloader and executing normal firmware code, so the investigation
+moved to the USB interrupt path.
+
+The USB interrupt handler was associated with the STM32F103 USB low-priority interrupt:
+
+USB_LP_CAN_RX0_IRQHandler();
+
+The relevant vector-table entry was IRQ20, corresponding to vector-table index 36:
+
+    Vector Index    =  16 + IRQ number
+                    =  16 + 20
+                    =  36
+
+The startup assembly contained the normal Cortex-M3 vector table, with peripheral
+hadler weakly aliased to Default_Handler unless explicitly overridde. 
+
+USB_LP_CAN_RX0_IRQHandler() was explicitly implemented in usb.cpp, so the USB
+interrupt had a valid route from the vector table to the firmware handler.
+
+
+────────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+5. Proving That the USB interrupt Actually Fired
+
+GDB was connected to the running firmware using OpenOCD:
+
+    openocd -f interface/cmsis-dap.cfg -f target/stm32f1x.cfg
+
+and:
+
+    gdb-multiarch build/blue_pill_bootloader.elf
+
+After connecting to the target:
+
+-> target extended-remote localhost:3333
+-> continue
+
+a breakpoint was placed on the USB ISR:
+
+-> break USB_LP_CAN_RX0_IRQHandler
+
+GDB reported the breakpoint at the USB interrupt handle, and after continuing execution 
+the breakpoint was hit:
+
+-> Breakpoint 1, USB_LP_CAN_RX0_IRQHandler () at src/usb.cp: 120
+   120      const u16 istr = USB->ISTR;
+
+This established a critical fact that the USB peripheral was generating an interrupt
+and the CPU was reaching the intended USB interrupt handler.
+
+Therefore, the problem was not simply that the USB interrupt was disabled or that 
+execution never reached the ISR.
+
+The debugging path had successfully crossed the following hardware/software boundary:
+
+USB peripheral -> interrupt request -> NVIC -> vector table -> USB_LP_CAN_RX0_IRQHandler()
+
+
+────────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+6. Determining Which USB Event caused the Interrupt
+
+
+
+
