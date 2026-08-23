@@ -255,6 +255,191 @@ if( istr & USB_ISTR_bits::RESET ) {
     return;
 }
 
+The intended purpose of the branc is straightforward: detect the USB bus reset, reinitialize the 
+USB endpoint state, clear the RESET event, and return from the interrupt.
+
+However, the operations were ordered as follows sequentially:
+
+-> RESET detected
+
+-> reset_endpoints()
+
+-> clear RESET
+
+-> return 
+
+The corrected order is:
+
+-> RESET detected
+
+-> clear RESET
+
+-> reset_endpoints()
+
+-> return
+
+The difference is only the ordering of these two operations, but it changes
+the peripheral state in which endpoint initialization takes place.
+
+
+────────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+8. What reset_endpoints() Was Supposed to Establish 
+
+The endpoint-reset function contaned the following initialisation:
+
+inline void reset_endpoints() {
+
+    USB->BTABLE = 0;
+    
+    USB->EPnR[0].value = USB_EPnR_bits::EP_TYPE_CONTROL 
+                       | USB_EPnR_bits::STAT_RX_VALID
+                       | USB_EPnR_bits::STAT_TX_NAK;
+    
+    USB_BTABLE[0].ADDR_RX.data  = EP0_RX_BUFFER_OFFSET;
+    
+    USB_BTALBE[0].COUNT_RX.data = pma_count_rx_encode(
+                                        EP0_MAX_PACKET_SIZE,
+                                        PMA_BLSIZE_t::Large_32Bytes
+                                    );
+
+    USB_BTABLE[0].ADDR_TX.data  = EP0_TX_BUFFER_OFFSET;
+
+    USB_BTABLE[0].COUNT_TX.data = 0;
+
+    USB->DADDR = USB_DADDR_bits::EF;
+}
+
+The important endpoint configuration was:
+
+USB_EPnR_bits::EP_TYPE_CONTORL | USB_EPnR_bits::STAT_RX_VALID | USB_EPnR_bits::STAT_RX_NAK
+
+The individual values were
+
+EP_TYPE_CONTROL = 0x0200
+STAT_TX_VALID   = 0x3000
+STAT_TX_NAK     = 0x0020
+
+Therefore:
+
+0x0200 | 0x3000 | 0x0020 = 0x3220
+
+So the intended EP0 configuration value was 0x3220.
+
+This establishes EP0 as a contorl endpoint, makes its receive side availabe  to the USB peripheral,
+and leaves its transmit side in the intended NAK state.
+
+
+────────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+9. The EP0 Register Anomaly
+
+EP0R is located at:
+  
+    0x40005C00
+
+During single-stepping through reset_endpoints(), the endpoint register was inspected with:
+
+-> print/x *(unsigned short*)0x40005C00
+
+The register was observed as:
+
+    0x0000
+
+This was unexpected because the firmware had just attemped to confiugre EP0 with:
+
+    0x3220
+
+After:
+
+-> next
+
+executin moved to the PMA configuration:
+
+    USB_BTABLE[0].ADDR_RX.data = EP0_RX_BUFFER_OFFSET;
+
+and EP0R was inspected again. It still appeared as:
+
+    0x0000
+
+This created the central debugging question:
+
+Why was the EP0 endpoint register not exhibiting the expected configuration
+even though the fimrware had executed the assignment ?
+
+At this point several possibilities had to be considered rather than immediately
+blaming the source statement.
+
+Potential explanation included an incorrect register address, an incorrect
+C++ peripheral structure, an incorrect endpoint-register stried, special hardware
+semantics of EPnR, hardware ownership of particular bits, or an inappropriate peripheral
+state during the write.
+
+
+────────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+10. Verifying the USB Peripheral Register Map
+
+The USB peripheral was represented by a C++ structure similar to :
+
+struct USB_t {
+    
+    struct EPnR_t {
+        vu16 value;
+        u16  _unused;
+    };
+
+    std::array<EPnR__t, 8 > EPnR;
+    
+    std::array<u16, 16> RESERVED;
+
+    vu16 CNTR;
+    u16  _r_cntr;
+
+    vu16 ISTR;
+    u16  _r_istr;
+
+    vu16 FNR;
+    u16  _r_fnr;
+
+    vu16 DADDR;
+    u16  _r_daddr;
+
+    vu16 BTABLE;
+    u16  _r_btable;
+};
+
+The peripheral base address was:
+
+    inline USB_t* const USB = reinterpret_cast<USB_t*>(0x40005C00U);
+
+With each endpoint regiser occupying four bytes in the memory map, 
+the expected addresses were:
+
+    EP0R 0x40005C00 
+    EP1R 0x40005C04 
+    EP2R 0x40005C08 
+    ... 
+    EP7R 0x40005C1C 
+    CNTR 0x40005C40 
+    ISTR 0x40005C44 
+    FNR 0x40005C48 
+    DADDR 0x40005C4C 
+    BTABLE 0x40005C50
+
+The observed behaviour of the USB register was consistent with this mapping.
+This substantially reduced the probability that the failure was simply caused
+by an incorrect base address or incorrect endpoint-register stride.
+
+
+────────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+11. Direct GDB Write to EP0R
+
 
 
 
