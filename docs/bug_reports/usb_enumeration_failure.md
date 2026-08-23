@@ -440,6 +440,51 @@ by an incorrect base address or incorrect endpoint-register stride.
 
 11. Direct GDB Write to EP0R
 
+To distinguish a compiler/source-code problem from a peripheral-register behaviour
+problem, the endpoint register was also accessed directly through GDB.
+
+The following was attempted:
+
+-> set *(unsigned short*) 0x40005C00 = 0x3220
+
+Immediately afterward:
+
+-> print/x *(unsigned short*) 0x40005C00 
+
+Still produced:
+
+    0x0
+
+This was an important observation.
+
+It showed that the phenomenon was not merely caused by the compiler optimizing or 
+transforming the C++ assignment unexpectedly. Even a direct debugger write did
+not result in the expected straightforward readback.
+
+At this point, the STM32 USB endpoint register's special hardware semantics became
+important. EPnR is not an ordinary SRAM-backed regiser. Several fields have 
+hardware-controlled or toggle semantics, and therefore a readback cannot automatically
+be interpreted as a simple echo of every value written.
+
+This prevented the investiation from treating:
+
+-> write 0x3220
+-> read exactly 0x3220
+
+as the only possible definition of success.
+
+The endpoint register had to be evaluated according to its actual hardware semantics
+and, more importantly, according to whether the USB peripheral subsequently behaved 
+correctly.
+
+
+────────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+12. PMA and BTABLE Investigation
+
+
+
 
 
 
