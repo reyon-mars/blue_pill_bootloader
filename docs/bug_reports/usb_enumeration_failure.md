@@ -483,8 +483,57 @@ correctly.
 
 12. PMA and BTABLE Investigation
 
+The next step was to determine whether the endpoint buffer configuration was also 
+failing.
+
+This was important because USB endpoint initialization consists of more than just
+EPnR. The USB peripheral also uses the Packet Memory Aread (PMA) for USB packet
+buffers, with the Buffer Table (BTABLE) describing where endpoint buffers are located.
+
+The BTABLE itself was configured with:
+
+    USB->BTABLE = 0;
+
+meaning that the buffer was placed at the selected PMA base offset. The endpoint
+descriptor contains the address and size information required by the USB peripheral
+to locate its RX and TX buffers.
 
 
+────────────────────────────────────────────────────────────────────────────────────────────────────
 
 
+13. EP0 PMA Allocation
 
+The firmware reserved space for the endpoint descriptrs and then allocated the EP0 buffers after
+that region.
+
+        PMA 
+        │ 
+        ├── BTABLE 
+        │   ├── EP0 descriptor 
+        │   ├── EP1 descriptor 
+        │   ├── ... 
+        │   └── EP7 descriptor 
+        │ 
+        ├── EP0 RX buffer 
+        │ 
+        └── EP0 TX buffer
+
+The BTABLE occupies:
+
+    8 endpoints x 8 bytes = 64 bytes
+
+so:
+
+    constexpr u32 BTABLE_LOCAL_SIZE = ( 8 * 8 );
+
+produces 64 bytes.
+
+The EP0 buffer offsets were then calculate form the reserved BTABLE space
+and the configured buffer sizes.
+
+
+────────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+14. P
