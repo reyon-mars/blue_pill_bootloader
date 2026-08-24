@@ -536,4 +536,33 @@ and the configured buffer sizes.
 ────────────────────────────────────────────────────────────────────────────────────────────────────
 
 
-14. P
+14. PMA/BTABLE Values Were Successfully Written
+
+The PMA descriptro was subsequently inspected direclty.
+
+The observed values included:
+
+ADDR_RX     = 128
+COUNT_RX    = 64
+ADDR_TX     = 192
+COUNT_TX    = 0
+
+These values were consistent with the endpoint-buffer allocation being performed
+by reset_endpoints().
+
+This was a significant result because it demonstrated that the PMA writes were actually
+reaching the expected memory.
+
+The debugging therefor narrowed the failure further:
+
+EP0R configuration          -> anamolous
+BTABLE configuration        -> written correctly
+PMA buffer configuration    -> written correctly
+
+This made a general USB-memory addressing failure much less likely.
+
+
+────────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+15. Verifying DADDR
