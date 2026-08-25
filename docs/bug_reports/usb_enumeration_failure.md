@@ -566,3 +566,86 @@ This made a general USB-memory addressing failure much less likely.
 
 
 15. Verifying DADDR
+
+The final part of reset_endpoints() configured:
+
+    USB->DADDR  = USB_DADDR_bits::EF;
+
+The USB device-address register is located at:
+
+    0x40005C4C
+
+After execution, it was inspected with GDB.
+The observed value was:
+
+    0x80
+
+which corresponds to:
+
+    EF = bit 7
+
+Therefor the USB device enable bit was being accepted.
+
+This was another important isolation point. The USB peripheral was not 
+generally refusing all configuration writes.
+
+The evidence up until this point were as follows:
+
+USB ISTR            -> readable
+USB RESET           -> correctly detected
+USB interrupt       -> reaches CPU
+PMA/BTABLE          -> writable
+DADDR               -> writable
+EP0R                -> writes are being ignored 
+
+This investigation therefore had to focus specifically on the relationship
+between USB RESET handling and endpoint reinitialization.
+
+
+────────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+16. Understanding CTR_RX and SETUP
+
+Once the RESET path was isolated, the next quetion was whether the device could actually 
+receive a USB contorl transaction.
+
+The endpoint register contains hardware-generated transaciton status information 
+including:
+
+    CTR_RX = ( 1U << 15 );
+
+and:
+    SETUP  = ( 1U << 11 );
+
+These bits are not equivalent to ordinary software configuraiton fields. 
+
+A real USB SETUP transaction must occur on the physical USB bus. The USB serial interface
+engine (SIE) receives that transaction and updates the endpoint status accordingly.
+
+The expected sequence is as follows:
+
+-> Host sends SETUP packet
+
+-> USB SIE receives packet
+
+-> EP0 receive transaction compeletes
+
+-> EP0R.CTR_RX becomes asserted
+
+-> ISTR.CTR becomes asserted
+
+-> USB ISR handles CTR
+
+-> SETUP bit is examined
+
+The distincation became importatnt during the debugging because attempting to simulate
+a CORRECT TRANSFER for the SETUP thorugh debugger writes is not equivalent to causing the 
+hardware to receive an actual USB transaction.
+
+
+────────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+17. 
+
