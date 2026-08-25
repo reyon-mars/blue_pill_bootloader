@@ -647,5 +647,29 @@ hardware to receive an actual USB transaction.
 ────────────────────────────────────────────────────────────────────────────────────────────────────
 
 
-17. 
+17. Why Artificially Forcing CTR Was Not a Valid USB Test
+
+Attempts were made to understand whether hardware status bits such as CTR_RX and SETUP
+could be written manually.
+
+However, these fields represent transaction state generate by the USB peripheral. A debugger
+write does not reproduce the physical sequence:
+
+USB host -> USB signaling -> USB SIE -> endpoint packet reception -> transaction completion -> CTR_RX
+
+Similarly, forcing the NVIC pending state would only test whether the CPU can enter the ISR. It would
+not create a USB packet.
+
+Therefore, after the RESET-path problem was identified, the meaningful verification had to return 
+to the real USB bus:
+
+USB host -> physical SETUP transaction -> STM32 USB peripheral -> EP0 status -> ISR
+
+
+────────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+18. Relationship Between RESET and CTR
+
+
 
