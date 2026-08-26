@@ -728,5 +728,28 @@ which gives:
 
 19. Root Cause
 
-    The root cause of the USB enumeration failure was an incorrect 
+The root cause of the USB enumeration failure was an incorrect ordering of operations in the 
+USB RESET interrupt handler.
+
+The endpoint initialization routine was invoked while the USB RESET event was still active. This 
+resulted in the endpoint state not being established in the expected way, with EP0 failing to 
+exhibit the intended post-reset configuration. Because EP0 was not correctly established for the
+subsequent control-transfer stage, the host could not progress normally through USB enumeration.
+
+
+────────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+20. Corrected Implementation
+
+The corrected RESET branch is:
+
+if( istr & USB_ISTR_bits::RESET ) {
+
+    USB->ISTR = ~(USB_ISTR_bits::RESET);
+    
+    reset_endpoints();
+    
+    return;
+}
 
