@@ -669,7 +669,64 @@ USB host -> physical SETUP transaction -> STM32 USB peripheral -> EP0 status -> 
 ────────────────────────────────────────────────────────────────────────────────────────────────────
 
 
-18. Relationship Between RESET and CTR
+18. The Error
+
+The central discovery was the ordering inside the RESET branch.
+
+The firmware originally performed:
+
+if( istr & USB_ISTR_bits::RESET ) {
+
+    reset_endpoints();
+    USB->ISTR = ~(USB_ISTR_bits::RESET);
+    return;
+}
+
+The sequence was therefore:
+
+-> Detect RESET 
+
+-> Keep RESET event active 
+
+-> Reconfigure endpoints 
+
+-> Configure PMA 
+
+-> Enable USB 
+
+-> clear RESET
+
+-> Return
+
+The corrected sequence is:
+
+if( istr & USB_ISTR_bits::RESET ) {
+
+    USB->ISTR = ~(USB_ISTR_bits::RESET);
+    reset_endpoints();
+    return;
+}
+
+which gives:
+
+-> Detect RESET
+
+-> Clear RESET event
+
+-> Reconfigure endpoints
+
+-> Configure PMA
+
+-> Enable USB
+
+-> Return
 
 
+
+────────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+19. Root Cause
+
+    The root cause of the USB enumeration failure was an incorrect 
 
