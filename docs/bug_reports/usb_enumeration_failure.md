@@ -753,3 +753,51 @@ if( istr & USB_ISTR_bits::RESET ) {
     return;
 }
 
+The updated code acknowledges the RESET event and then clears the RESET flag before performing 
+the endpoints reset.
+
+
+────────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+21. Verification Plan After the Fix
+
+After applying the Fix, the next debugging session verified that the complete chain was behaving
+as expected. 
+
+The firmware was first rebuilt and flashed:
+
+-> make clean 
+-> make
+-> make flash
+
+GDB was connected through OpenOCD:
+
+->openocd -f interface/cmsis-dap.cfg -f target/stm32f1x.cfg
+
+and:
+
+-> gdb-multiarch build/blue_pill_bootloader.elf
+
+After:
+
+-> target extended-remote localhost:3333
+
+Breakpoint placed on : 
+
+-> break USB_LP_CAN_RX0_IRQHandler
+
+When the USB RESET interrupt occurred , the debugger confimred that the 
+execution reached the RESET branc and the after the execution of the subsequent lines
+of code, the state of the EP0 register before the returned exhibited that the write due to
+reset_endpoints() was successful and the value was updated to 0x3220.
+
+-> print/x *(unsigned short* ) 0x40005C00
+
+   0x3220
+
+Once the RESET branch was executed the code ended up inside the very next CTR branch and
+updated the g_usb_setup_seen flag to true, verified by reading the value of the g_usb_setup_seen
+flag. 
+
+Eventually the MCU behaved as expected with the led being solid, for multiple trials.
