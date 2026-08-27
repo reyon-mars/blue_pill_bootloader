@@ -114,25 +114,50 @@ namespace {
 
 // =================================================================
 // USB_LP_CAN_RX0_IRQHandler()
+//
+// This function provides a strong C-linkage implementation for the 
+// low-priority USB/CAN interrupt handler. This overrides the 
+// default __attribute__((weak)) dummy handler defined in the 
+// startup assembly file.
 // =================================================================
 extern "C" void USB_LP_CAN_RX0_IRQHandler() {
 
+    // Read the current state of the Interrupt Status Register
     const u16 istr = USB->ISTR;
 
+    // ───────────────────────────────────────────────────────────────
+    // USB BUS RESET Condition
+    // ───────────────────────────────────────────────────────────────
     if( istr & USB_ISTR_bits::RESET ) {
-
+        
+        // Clear the RESET interrupt flag in ISTR 
         USB->ISTR = ~(USB_ISTR_bits::RESET);
+        // Re-Initialize all endpoint registers and states 
         reset_endpoints();
         return;
     }
 
+    // ───────────────────────────────────────────────────────────────
+    // Correct Transfer (CTR) Event
+    // ───────────────────────────────────────────────────────────────
     if( istr & USB_ISTR_bits::CTR ) {
+
+        // Mask out bits[3:0] to identify which endpoint number
+        // triggered the interrupt 
         const u16 ep_id = istr & USB_ISTR_bits::EP_ID_MASK;
+
+        // Process transfers targeting Control Endpoint 0
         if( ep_id == 0 ) {
+
+            // Check if the endpoint register indicates an incoming
+            // 8-byte SETUP transaction from the host
             if( USB->EPnR[0].value & USB_EPnR_bits::SETUP )
             {
                 g_usb_setup_seen = true;
             }
+
+            // Clear the CTR_RX flag in EP0R to acknowledge hardware 
+            // and re-enable reception
             ep_clear_ctr_rx(EP_Num_t::EP0);
         }
     }
