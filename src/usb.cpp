@@ -121,8 +121,8 @@ extern "C" void USB_LP_CAN_RX0_IRQHandler() {
 
     if( istr & USB_ISTR_bits::RESET ) {
 
-        reset_endpoints();
         USB->ISTR = ~(USB_ISTR_bits::RESET);
+        reset_endpoints();
         return;
     }
 
