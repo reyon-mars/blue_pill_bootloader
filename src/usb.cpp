@@ -1,5 +1,6 @@
 #include "../include/usb.hpp"
 #include "../include/system.hpp"
+#include "../include/enumeration.hpp"
 #include <cstddef>
 
 
@@ -153,7 +154,9 @@ extern "C" void USB_LP_CAN_RX0_IRQHandler() {
             // 8-byte SETUP transaction from the host
             if( USB->EPnR[0].value & USB_EPnR_bits::SETUP )
             {
+                g_pending_setup  = read_setup_packet();
                 g_usb_setup_seen = true;
+
             }
 
             // Clear the CTR_RX flag in EP0R to acknowledge hardware 
