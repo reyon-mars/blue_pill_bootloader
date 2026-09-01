@@ -15,3 +15,12 @@
  extern SetupPacket_t g_pending_setup;
  
  SetupPacket_t read_setup_packet();
+
+ namespace UsbRequest {
+   constexpr u8 GET_DESCRIPTOR   = 6;
+   constexpr u8 SET_ADDRESS      = 5;   
+ }
+
+ namespace UsbDescriptorType {
+   constexpr u8 DEVICE  = 1;
+ }
