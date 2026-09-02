@@ -39,3 +39,14 @@ SetupPacket_t read_setup_packet() {
 
     return packet;
 }
+
+void handle_setup_request(const SetupPacket_t &setup) {
+    
+    const bool is_get_descriptor = ( setup.bRequest == UsbRequest::GET_DESCRIPTOR );
+    
+    const bool is_device_type   = ((setup.wValue >> 8 ) == UsbDescriptorType::DEVICE );
+
+    if( is_get_descriptor &&  is_device_type ) {
+        
+    }
+}
