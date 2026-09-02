@@ -4,6 +4,23 @@
 
 SetupPacket_t g_pending_setup{};
 
+const u8 g_device_descriptor[18] = {
+    18,
+    1,
+    0x10, 0x01,
+    0,
+    0,
+    0,
+    64,
+    0x09, 0x12,
+    0x01, 0x00,
+    0x00, 0x01,
+    0,
+    0,
+    0,
+    1
+};
+
 
 SetupPacket_t read_setup_packet() {
 
