@@ -162,6 +162,11 @@ extern "C" void USB_LP_CAN_RX0_IRQHandler() {
             // Clear the CTR_RX flag in EP0R to acknowledge hardware 
             // and re-enable reception
             ep_clear_ctr_rx(EP_Num_t::EP0);
+
+            if( g_usb_setup_seen )
+            {
+                handle_setup_request(g_pending_setup);
+            }
         }
     }
 }
@@ -202,6 +207,26 @@ void pma_write_words( u32 local_offset, std::span<const u16> src ) {
     }
 }
 
+
+// ============================================================================
+// 
+// ============================================================================
+void ep0_queue_tx(std::span<const u16> data, u16 host_wLength) {
+    
+    const u16 send_len {
+                        static_cast<u16>( 
+                        data.size() < host_wLength ? 
+                        data.size() : host_wLength )
+                       };
+
+    pma_write_words( static_cast<u32>(EP0_TX_BUFFER_OFFSET), 
+                              data.first(send_len));
+    USB_BTABLE[0].COUNT_TX.data = send_len;
+
+    ep_set_status( EP_Num_t::EP0, 
+              USB_EPnR_bits::STAT_TX_VALID,
+              USB_EPnR_bits::STAT_RX_VALID );
+}
 
 // ===================================================================
 // ep_set_status()
