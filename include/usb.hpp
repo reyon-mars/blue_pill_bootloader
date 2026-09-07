@@ -174,6 +174,12 @@ void pma_write_words( u32 local_offset, std::span<const u16> src );
 
 
 // ============================================================================
+// 
+// ============================================================================
+void ep0_queue_tx( std::span<const u16> data, u16 host_wLength );
+
+
+// ============================================================================
 // Change STAT_TX/STAT_RX on one endpoint's EPnR safely, at any time.
 // Avoid a blind read-modify-write.
 // ============================================================================
