@@ -47,6 +47,6 @@ void handle_setup_request(const SetupPacket_t &setup) {
     const bool is_device_type   = ((setup.wValue >> 8 ) == UsbDescriptorType::DEVICE );
 
     if( is_get_descriptor &&  is_device_type ) {
-        
+        ep0_queue_tx(std::span<const u16>( g_device_descriptor), setup.wLength);
     }
 }
